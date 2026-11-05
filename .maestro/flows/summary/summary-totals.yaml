@@ -1,0 +1,32 @@
+appId: com.taskcostsplit.app
+name: Resumo reflete pago, pendente e total
+tags:
+  - summary
+---
+- runFlow: ../../subflows/launch-and-sign-in.yaml
+- runFlow:
+    file: ../../subflows/create-activity.yaml
+    env:
+      TITLE: "Resumo E2E"
+# valor distinto para não colidir com dados deixados por outros flows da suíte
+- runFlow:
+    file: ../../subflows/create-expense.yaml
+    env:
+      EXPENSE_TITLE: "Taxi aeroporto"
+      EXPENSE_AMOUNT: "330000"
+
+- tapOn: "Taxi aeroporto, Pendente"
+- waitForAnimationToEnd
+- tapOn:
+    id: "share-status-.*-paid"
+    index: 0
+- assertVisible: "Parcial"
+- tapOn: "Fechar"
+
+- tapOn: "Voltar"
+- tapOn:
+    id: "tab-summary"
+- assertVisible: "Minhas contas"
+- assertVisible: "Informações gerais"
+- assertVisible: "Total de despesas"
+- assertVisible: "3\\.300,00"

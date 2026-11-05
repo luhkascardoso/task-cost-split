@@ -1,0 +1,16 @@
+appId: com.taskcostsplit.app
+name: Senha errada mostra erro de login
+tags:
+  - auth
+---
+- runFlow: ../../subflows/launch-clean.yaml
+- tapOn:
+    id: "sign-in-email"
+- inputText: "naoexiste@test.com"
+- tapOn:
+    id: "sign-in-password"
+- inputText: "123456"
+- tapOn: "Entre no app"
+- tapOn:
+    id: "sign-in-submit"
+- assertVisible: "E-mail ou senha inválidos"

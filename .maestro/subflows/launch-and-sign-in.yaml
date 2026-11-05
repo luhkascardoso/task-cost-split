@@ -1,0 +1,55 @@
+appId: com.taskcostsplit.app
+---
+# Reusa a sessão do cadastro (sem clearState). Sem deep link de sign-out:
+# o scheme taskcostsplit:// não está no Info.plist deste build.
+- launchApp:
+    clearState: false
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Entre no app|Organize suas despesas divididas|Crie sua conta"
+    timeout: 20000
+
+# Já logado → ok (fluxo típico do smoke após o cadastro)
+- runFlow:
+    when:
+      visible: "Organize suas despesas divididas"
+    commands:
+      - assertVisible: "Organize suas despesas divididas"
+
+# Em cadastro → ir ao login
+- runFlow:
+    when:
+      visible: "Crie sua conta"
+    commands:
+      - tapOn:
+          id: "auth-footer-action"
+
+# Precisa autenticar: tenta login; se a conta não existir, cadastra
+- runFlow:
+    when:
+      visible: "Entre no app"
+    commands:
+      - tapOn:
+          id: "sign-in-email"
+      - inputText: "e2e@taskcostsplit.test"
+      - tapOn:
+          id: "sign-in-password"
+      - runFlow:
+          when:
+            visible: "Not Now|Não agora"
+          commands:
+            - tapOn: "Not Now|Não agora"
+      - inputText: "123456"
+      - tapOn: "Entre no app"
+      - tapOn:
+          id: "sign-in-submit"
+      - extendedWaitUntil:
+          visible: "Organize suas despesas divididas|E-mail ou senha inválidos"
+          timeout: 20000
+      - runFlow:
+          when:
+            visible: "E-mail ou senha inválidos"
+          commands:
+            - tapOn:
+                id: "auth-footer-action"
+            - runFlow: sign-up.yaml

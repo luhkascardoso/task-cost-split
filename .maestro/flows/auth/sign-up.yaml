@@ -1,0 +1,25 @@
+appId: com.taskcostsplit.app
+name: Cadastro leva às atividades vazias
+tags:
+  - smoke
+  - auth
+---
+- runFlow: ../../subflows/launch-clean.yaml
+- runFlow: ../../subflows/sign-up.yaml
+- assertVisible: "Você ainda não tem atividades criadas"
+
+# Fecha o banner do LogBox se ainda estiver na tela (cobre a tab bar).
+- runFlow:
+    when:
+      visible: "Open debugger to view warnings"
+    commands:
+      - tapOn:
+          point: "92%,90%"
+
+- tapOn:
+    id: "tab-summary"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Acompanhe as informações principais sobre suas atividades"
+    timeout: 10000
+- assertVisible: "Para começar a acompanhar, crie uma atividade"

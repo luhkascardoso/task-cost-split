@@ -1,0 +1,52 @@
+appId: com.taskcostsplit.app
+env:
+  USER_NAME: "Lucas Teste"
+  USER_EMAIL: "e2e@taskcostsplit.test"
+  USER_PASSWORD: "123456"
+---
+# Navegação por UI (scheme taskcostsplit:// ausente no Info.plist deste build).
+- runFlow:
+    when:
+      visible: "Entre no app"
+    commands:
+      - tapOn:
+          id: "auth-footer-action"
+
+- extendedWaitUntil:
+    visible: "Crie sua conta"
+    timeout: 10000
+
+- tapOn:
+    id: "sign-up-name"
+- inputText: ${USER_NAME}
+
+- tapOn:
+    id: "sign-up-email"
+- inputText: ${USER_EMAIL}
+
+- tapOn:
+    id: "sign-up-password"
+- runFlow:
+    when:
+      visible: "Not Now|Não agora"
+    commands:
+      - tapOn: "Not Now|Não agora"
+- inputText: ${USER_PASSWORD}
+
+# Fecha o teclado (hideKeyboard é instável no iOS)
+- tapOn: "Crie sua conta"
+- tapOn:
+    id: "sign-up-submit"
+
+# Conta já existia → login
+- runFlow:
+    when:
+      visible: "Este e-mail já está cadastrado"
+    commands:
+      - tapOn:
+          id: "auth-footer-action"
+      - runFlow: sign-in.yaml
+
+- extendedWaitUntil:
+    visible: "Organize suas despesas divididas"
+    timeout: 20000

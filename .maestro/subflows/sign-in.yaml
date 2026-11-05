@@ -1,0 +1,28 @@
+appId: com.taskcostsplit.app
+env:
+  USER_EMAIL: "e2e@taskcostsplit.test"
+  USER_PASSWORD: "123456"
+---
+- assertVisible: "Entre no app"
+
+- tapOn:
+    id: "sign-in-email"
+- inputText: ${USER_EMAIL}
+
+- tapOn:
+    id: "sign-in-password"
+- runFlow:
+    when:
+      visible: "Not Now|Não agora"
+    commands:
+      - tapOn: "Not Now|Não agora"
+- inputText: ${USER_PASSWORD}
+
+# Fecha o teclado (hideKeyboard é instável no iOS)
+- tapOn: "Entre no app"
+- tapOn:
+    id: "sign-in-submit"
+
+- extendedWaitUntil:
+    visible: "Organize suas despesas divididas"
+    timeout: 20000

@@ -39,3 +39,15 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## Este projeto (TaskCost Split)
+
+App de divisão de despesas. Leia `README.md` e `docs/` antes de mudar algo estrutural.
+
+- Camadas: `src/app` (rotas finas) → `src/features/*/api.ts` (React Query) → `src/domain` (regras puras, testadas) → `src/lib`. Ver `docs/01-arquitetura.md`.
+- Dinheiro é sempre inteiro em **centavos**. Regras de divisão/status em `src/domain` — altere o teste junto (`docs/05-regras-de-negocio.md`).
+- Estilos só via tokens de `@/theme` (extraídos do Figma) e componentes de `@/components/ui`. Mapa Figma→código em `docs/02-design-system.md`; nodes de cada tela em `docs/03-telas-e-navegacao.md`.
+- Sheets são rotas `presentation: 'formSheet'` registradas em `src/app/(app)/_layout.tsx` (sem header nativo, sem `flex: 1` com `fitToContents`).
+- Dados só via o contrato `DataSource` (`src/data/types.ts`) importando `data` de `@/data`; nunca importe `src/data/mock` fora de `src/data`. Hooks nas features, invalidação via `queryKeys`.
+- Não há backend ainda (decisão do usuário: backend próprio, a ser feito depois — não criar servidor sem pedido). O app roda com a implementação `mock` (AsyncStorage). Ver `docs/04-camada-de-dados.md`.
+- Node >= 22.13. Antes de concluir: `npm run typecheck && npm run lint && npm test`.

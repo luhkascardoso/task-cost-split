@@ -1,0 +1,8 @@
+appId: com.taskcostsplit.app
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Entre no app"
+    timeout: 20000

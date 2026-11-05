@@ -1,0 +1,30 @@
+appId: com.taskcostsplit.app
+name: Despesa dividida e pagamento parcial
+tags:
+  - smoke
+  - expenses
+---
+- runFlow: ../../subflows/launch-and-sign-in.yaml
+
+- runFlow:
+    file: ../../subflows/create-activity.yaml
+    env:
+      TITLE: "Férias de verão"
+- assertVisible: "Para começar a dividir, registre uma despesa"
+
+- runFlow:
+    file: ../../subflows/create-expense.yaml
+    env:
+      EXPENSE_TITLE: "Aluguel da casa"
+      EXPENSE_AMOUNT: "220000"
+
+- assertVisible: "R\\$ 2\\.200,00"
+- assertVisible: "Aluguel da casa, Pendente"
+
+- tapOn: "Aluguel da casa, Pendente"
+- waitForAnimationToEnd
+- tapOn:
+    id: "share-status-.*-paid"
+    index: 0
+- assertVisible: "Parcial"
+- takeScreenshot: despesa-parcial

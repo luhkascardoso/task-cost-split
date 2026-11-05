@@ -1,0 +1,19 @@
+flows:
+  - "flows/**"
+  - "!subflows/**"
+includeTags: []
+excludeTags:
+  - wip
+testOutputDir: build/maestro-results
+# Só flows `smoke` aqui: `e2e:smoke` filtra por tag e o Maestro exige que
+# todos os nomes de flowsOrder existam no conjunto filtrado.
+# Cadastro primeiro (cria e2e@taskcostsplit.test); os demais fazem login.
+executionOrder:
+  continueOnFailure: true
+  flowsOrder:
+    - Cadastro leva às atividades vazias
+    - Criar, editar e excluir atividade
+    - Despesa dividida e pagamento parcial
+platform:
+  ios:
+    snapshotKeyHonorModalViews: false

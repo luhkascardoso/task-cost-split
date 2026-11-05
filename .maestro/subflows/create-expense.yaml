@@ -1,0 +1,26 @@
+appId: com.taskcostsplit.app
+env:
+  EXPENSE_TITLE: "Aluguel da casa"
+  EXPENSE_AMOUNT: "220000"
+  PARTICIPANT_A: "Você"
+  PARTICIPANT_B: "Jonas Santos"
+---
+- tapOn: "Nova despesa"
+- waitForAnimationToEnd
+- assertVisible: "Nova despesa"
+- tapOn:
+    id: "expense-form-title"
+- inputText: ${EXPENSE_TITLE}
+- tapOn:
+    id: "expense-form-amount"
+- inputText: ${EXPENSE_AMOUNT}
+- tapOn:
+    id: "expense-form-participants"
+- inputText: ${PARTICIPANT_A}
+- pressKey: Enter
+- inputText: ${PARTICIPANT_B}
+- pressKey: Enter
+- tapOn: "Nova despesa"
+- tapOn: "Salvar"
+# accessibilityLabel do card = "<título>, Pendente"
+- assertVisible: ${EXPENSE_TITLE + ', Pendente'}

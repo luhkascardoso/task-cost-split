@@ -1,0 +1,13 @@
+appId: com.taskcostsplit.app
+env:
+  TITLE: "Férias de verão"
+---
+- tapOn: "Criar"
+- waitForAnimationToEnd
+- assertVisible: "Nova atividade"
+- tapOn:
+    id: "activity-form-title"
+- inputText: ${TITLE}
+- tapOn: "Nova atividade"
+- tapOn: "Salvar"
+- assertVisible: ${TITLE}

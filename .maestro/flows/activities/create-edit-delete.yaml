@@ -1,0 +1,44 @@
+appId: com.taskcostsplit.app
+name: Criar, editar e excluir atividade
+tags:
+  - smoke
+  - activities
+---
+- runFlow: ../../subflows/launch-and-sign-in.yaml
+
+# criar
+- runFlow:
+    file: ../../subflows/create-activity.yaml
+    env:
+      TITLE: "Férias de verão"
+- assertVisible: "Para começar a dividir, registre uma despesa"
+
+# editar título
+- tapOn: "Editar atividade"
+- waitForAnimationToEnd
+- assertVisible: "Editar atividade"
+- tapOn:
+    id: "activity-form-title"
+- eraseText: 40
+- inputText: "Férias editadas"
+# Não usar "Editar atividade": o lápis do header (mesmo label) fecha o sheet.
+- tapOn:
+    id: "activity-form-date"
+- tapOn: "Salvar"
+- assertVisible: "Férias editadas"
+
+# excluir
+- tapOn: "Editar atividade"
+- waitForAnimationToEnd
+- tapOn:
+    id: "activity-form-delete"
+# Alert nativo: confirma "Excluir" à direita de "Cancelar"
+- extendedWaitUntil:
+    visible: "Cancelar"
+    timeout: 5000
+- tapOn:
+    text: "Excluir"
+    rightOf: "Cancelar"
+- extendedWaitUntil:
+    visible: "Você ainda não tem atividades criadas"
+    timeout: 10000
