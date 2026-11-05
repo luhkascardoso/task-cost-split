@@ -1,11 +1,14 @@
 import {
   buildShares,
   formatBRL,
+  getExpenseInputError,
   getExpenseStatus,
+  getParticipantNameError,
   getSummary,
   maskBRLInput,
   parseBRL,
   perPersonAmount,
+  shareStatusLabel,
   splitEvenly,
   type Expense,
   type Participant,
@@ -117,5 +120,31 @@ describe('summary', () => {
       expensesCount: 2,
       participantsCount: 1,
     });
+  });
+});
+
+describe('validation', () => {
+  const valid = { title: 'Pizza', amount: 1000, participantIds: ['a'] };
+
+  it('aceita despesa válida', () => {
+    expect(getExpenseInputError(valid)).toBeNull();
+  });
+
+  it('rejeita título vazio, valor inválido e sem participantes', () => {
+    expect(getExpenseInputError({ ...valid, title: '  ' })).toBe('Informe um título');
+    expect(getExpenseInputError({ ...valid, amount: 0 })).toBe('Informe um valor');
+    expect(getExpenseInputError({ ...valid, amount: 10.5 })).toBe('Informe um valor');
+    expect(getExpenseInputError({ ...valid, participantIds: [] })).toBe('Adicione pelo menos um participante');
+  });
+
+  it('valida nome de participante', () => {
+    expect(getParticipantNameError('Ana')).toBeNull();
+    expect(getParticipantNameError(' ')).toBe('Informe o nome do participante');
+  });
+});
+
+describe('rótulos de status', () => {
+  it('cobre todos os status de cota', () => {
+    expect(shareStatusLabel).toEqual({ pending: 'Pendente', paid: 'Pago' });
   });
 });

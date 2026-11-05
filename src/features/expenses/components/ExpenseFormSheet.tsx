@@ -1,28 +1,23 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import { Trash2, Users, X } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { X } from 'lucide-react-native';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { FormInput } from '@/components/form/FormInput';
-import { Avatar, Button, Input, Sheet, Text } from '@/components/ui';
+import { Button, Input, Sheet, Text } from '@/components/ui';
 import { maskBRLInput, type Expense } from '@/domain';
-import { useCreateParticipant, useParticipants } from '@/features/participants/api';
-import { colors, radii, sizes, spacing } from '@/theme';
+import { colors, sizes, spacing } from '@/theme';
 import { useSaveExpense } from '../api';
 import { expenseFormSchema, type ExpenseFormInput } from '../schemas';
+import { ParticipantPicker } from './ParticipantPicker';
 
 /**
  * Figma: "Nova despesa" (5136:1026). Também usado para editar.
- * Participantes: digite para filtrar os existentes; Enter cria um novo.
+ * A seleção de participantes fica em `ParticipantPicker`.
  */
 export function ExpenseFormSheet({ activityId, expense }: { activityId: string; expense?: Expense }) {
   const save = useSaveExpense(activityId, expense);
-  const participants = useParticipants();
-  const createParticipant = useCreateParticipant();
-  const [query, setQuery] = useState('');
-
   const { control, handleSubmit, setValue, formState } = useForm<ExpenseFormInput>({
     resolver: zodResolver(expenseFormSchema),
     defaultValues: {
@@ -33,33 +28,8 @@ export function ExpenseFormSheet({ activityId, expense }: { activityId: string; 
   });
   const selectedIds = useWatch({ control, name: 'participantIds' });
 
-  const byId = useMemo(
-    () => new Map((participants.data ?? []).map((p) => [p.id, p.isSelf ? 'Você' : p.name])),
-    [participants.data],
-  );
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return (participants.data ?? [])
-      .filter((p) => !selectedIds.includes(p.id) && (p.isSelf ? 'você' : p.name.toLowerCase()).includes(q))
-      .slice(0, 4);
-  }, [query, participants.data, selectedIds]);
-
-  const add = (id: string) => {
-    setValue('participantIds', [...selectedIds, id], { shouldValidate: true });
-    setQuery('');
-  };
-  const removeId = (id: string) =>
-    setValue('participantIds', selectedIds.filter((p) => p !== id), { shouldValidate: true });
-
-  const onSubmitQuery = async () => {
-    const name = query.trim();
-    if (!name) return;
-    const existing = suggestions[0];
-    if (existing) return add(existing.id);
-    const created = await createParticipant.mutateAsync(name);
-    add(created.id);
-  };
+  const setParticipantIds = (ids: string[]) =>
+    setValue('participantIds', ids, { shouldValidate: true });
 
   const onSubmit = handleSubmit(async (values) => {
     await save.mutateAsync(values);
@@ -99,39 +69,12 @@ export function ExpenseFormSheet({ activityId, expense }: { activityId: string; 
               />
             )}
           />
-          <Input
-            icon={Users}
-            placeholder="Participantes"
-            value={query}
-            onChangeText={setQuery}
-            onSubmitEditing={onSubmitQuery}
-            returnKeyType="done"
-            submitBehavior="submit"
+          <ParticipantPicker
+            value={selectedIds}
+            onChange={setParticipantIds}
             error={formState.errors.participantIds?.message}
             testID="expense-form-participants"
           />
-          {suggestions.length > 0 && (
-            <View style={styles.suggestions}>
-              {suggestions.map((p) => (
-                <Pressable key={p.id} onPress={() => add(p.id)} style={styles.suggestion}>
-                  <Text variant="textSm">{p.isSelf ? 'Você' : p.name}</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-
-          {selectedIds.map((id) => {
-            const name = byId.get(id) ?? '…';
-            return (
-              <View key={id} style={styles.person}>
-                <Avatar name={name} />
-                <Text variant="labelMd" style={{ flex: 1 }}>{name}</Text>
-                <Pressable onPress={() => removeId(id)} hitSlop={8} accessibilityLabel={`Remover ${name}`}>
-                  <Trash2 size={sizes.iconSm} color={colors.danger} />
-                </Pressable>
-              </View>
-            );
-          })}
         </View>
 
         {save.error && <Text variant="textXs" tone="danger">{save.error.message}</Text>}
@@ -143,7 +86,4 @@ export function ExpenseFormSheet({ activityId, expense }: { activityId: string; 
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  person: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xxs },
-  suggestions: { borderWidth: 1, borderColor: colors.inputBorder, borderRadius: radii.md },
-  suggestion: { padding: spacing.sm },
 });

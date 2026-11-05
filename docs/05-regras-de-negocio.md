@@ -39,6 +39,23 @@ Cada cota tem `pending` ou `paid`. O status da **despesa** é derivado:
 | algumas pagas | `partial` | 🟡 Parcial |
 | todas pagas | `paid` | 🟢 Pago |
 
+### Rótulos
+
+`expenseStatusLabel` (Pendente/Parcial/Pago) e `shareStatusLabel` (Pendente/Pago) ficam em `status.ts`. Os componentes de UI (`StatusBadge`, `StatusSelect`) leem os textos daí, sem duplicar strings.
+
+## Validação de entrada (`validation.ts`)
+
+Regras que valem para qualquer fonte de dados (mock e o futuro backend). As funções devolvem a mensagem para a UI ou `null`; quem chama decide como sinalizar (o mock lança `DataError`).
+
+| Função | Regra | Mensagem |
+|---|---|---|
+| `getExpenseInputError` | título não vazio | Informe um título |
+| | valor inteiro > 0 (centavos) | Informe um valor |
+| | pelo menos 1 participante | Adicione pelo menos um participante |
+| `getParticipantNameError` | nome não vazio | Informe o nome do participante |
+
+A checagem de que os participantes pertencem ao usuário é de persistência e fica na implementação de dados.
+
 ## Participante "eu"
 
 - Cada usuário tem **um** participante com `is_self = true`, criado no cadastro com o nome informado.

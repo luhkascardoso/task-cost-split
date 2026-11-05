@@ -50,4 +50,5 @@ App de divisão de despesas. Leia `README.md` e `docs/` antes de mudar algo estr
 - Sheets são rotas `presentation: 'formSheet'` registradas em `src/app/(app)/_layout.tsx` (sem header nativo, sem `flex: 1` com `fitToContents`).
 - Dados só via o contrato `DataSource` (`src/data/types.ts`) importando `data` de `@/data`; nunca importe `src/data/mock` fora de `src/data`. Hooks nas features, invalidação via `queryKeys`.
 - Não há backend ainda (decisão do usuário: backend próprio, a ser feito depois — não criar servidor sem pedido). O app roda com a implementação `mock` (AsyncStorage). Ver `docs/04-camada-de-dados.md`.
+- Siga os princípios SOLID de `docs/11-solid.md` (checklist de feature nova e de PR). Ao tocar um arquivo listado em "Débitos conhecidos", corrija o débito ou não o agrave.
 - Node >= 22.13. Antes de concluir: `npm run typecheck && npm run lint && npm test`.

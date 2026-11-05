@@ -74,39 +74,47 @@ export interface ExpenseInput {
 
 export type ParticipantListItem = Participant & { activitiesCount: number };
 
+export interface ActivitiesSource {
+  /** Ordenadas por data desc, com totais (card da lista). */
+  list(): Promise<ActivityListItem[]>;
+  get(id: string): Promise<Activity>;
+  create(input: ActivityInput): Promise<Activity>;
+  update(id: string, input: ActivityInput): Promise<Activity>;
+  /** Remove a atividade e todas as suas despesas. */
+  remove(id: string): Promise<void>;
+}
+
+export interface ExpensesSource {
+  /** Ordenadas por criação asc. */
+  listByActivity(activityId: string): Promise<Expense[]>;
+  get(id: string): Promise<Expense>;
+  create(activityId: string, input: ExpenseInput): Promise<Expense>;
+  /** Recalcula as cotas preservando o status de quem continua na despesa. */
+  update(id: string, input: ExpenseInput): Promise<Expense>;
+  setShareStatus(expenseId: string, participantId: string, status: ShareStatus): Promise<Expense>;
+  remove(id: string): Promise<void>;
+}
+
+export interface ParticipantsSource {
+  /** Todos os participantes do usuário, incluindo o "eu" (isSelf). Ordenados por nome (pt-BR). */
+  list(): Promise<ParticipantListItem[]>;
+  create(name: string): Promise<Participant>;
+}
+
+export interface SummarySource {
+  get(): Promise<Summary>;
+}
+
+/**
+ * Contrato completo, segregado por recurso (ISP). Funções que precisam de um só
+ * recurso devem depender da sub-interface (ex.: `ExpensesSource`), não do todo.
+ */
 export interface DataSource {
   auth: AuthSource;
-
-  activities: {
-    /** Ordenadas por data desc, com totais (card da lista). */
-    list(): Promise<ActivityListItem[]>;
-    get(id: string): Promise<Activity>;
-    create(input: ActivityInput): Promise<Activity>;
-    update(id: string, input: ActivityInput): Promise<Activity>;
-    /** Remove a atividade e todas as suas despesas. */
-    remove(id: string): Promise<void>;
-  };
-
-  expenses: {
-    /** Ordenadas por criação asc. */
-    listByActivity(activityId: string): Promise<Expense[]>;
-    get(id: string): Promise<Expense>;
-    create(activityId: string, input: ExpenseInput): Promise<Expense>;
-    /** Recalcula as cotas preservando o status de quem continua na despesa. */
-    update(id: string, input: ExpenseInput): Promise<Expense>;
-    setShareStatus(expenseId: string, participantId: string, status: ShareStatus): Promise<Expense>;
-    remove(id: string): Promise<void>;
-  };
-
-  participants: {
-    /** Todos os participantes do usuário, incluindo o "eu" (isSelf). */
-    list(): Promise<ParticipantListItem[]>;
-    create(name: string): Promise<Participant>;
-  };
-
-  summary: {
-    get(): Promise<Summary>;
-  };
+  activities: ActivitiesSource;
+  expenses: ExpensesSource;
+  participants: ParticipantsSource;
+  summary: SummarySource;
 }
 
 /** Erro esperado (credencial inválida, recurso não encontrado, validação…). */

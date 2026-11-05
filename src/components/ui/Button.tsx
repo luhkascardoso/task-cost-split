@@ -6,6 +6,13 @@ import { Text } from './Text';
 
 type Variant = 'primary' | 'secondary' | 'danger';
 
+/** Nova variante = nova entrada aqui. O TypeScript aponta se faltar alguma. */
+const variants: Record<Variant, { container: 'primary' | 'secondary'; fg: string }> = {
+  primary: { container: 'primary', fg: colors.textOnBrand },
+  secondary: { container: 'secondary', fg: colors.textPrimary },
+  danger: { container: 'secondary', fg: colors.danger },
+};
+
 export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   label?: string;
   icon?: LucideIcon;
@@ -32,8 +39,7 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const iconOnly = !label;
-  const fg =
-    variant === 'primary' ? colors.textOnBrand : variant === 'danger' ? colors.danger : colors.textPrimary;
+  const { container, fg } = variants[variant];
 
   return (
     <Pressable
@@ -41,7 +47,7 @@ export function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.base,
-        variant === 'primary' ? styles.primary : styles.secondary,
+        styles[container],
         iconOnly && styles.iconOnly,
         block && styles.block,
         (pressed || disabled) && { opacity: 0.7 },
