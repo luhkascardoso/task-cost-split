@@ -25,7 +25,7 @@ Nada de backend foi feito por enquanto. Quando for a hora:
 - [ ] Definir stack do backend (linguagem, framework, banco, hospedagem)
 - [ ] Implementar o contrato de [04 · Camada de dados](04-camada-de-dados.md) (auth + recursos)
 - [ ] Criar o adaptador `src/data/http/` com tokens em `expo-secure-store`
-- [ ] Rodar os cenários de teste do mock contra o adaptador HTTP
+- [ ] Rodar a suíte de contrato (`src/test/data-source-contract.ts`) contra o adaptador HTTP
 
 ## Fase 2: Polimento de UX
 

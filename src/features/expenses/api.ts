@@ -32,7 +32,7 @@ export function useSaveExpense(activityId: string, existing?: Expense) {
 }
 
 /** Segmented control "Pendente | Pago" no detalhe da despesa. Atualização otimista. */
-export function useSetShareStatus(expense: Expense) {
+export function useSetShareStatus(expense: Pick<Expense, 'id' | 'activityId'>) {
   const key = queryKeys.expenses.detail(expense.id);
   return useMutation({
     mutationFn: ({ participantId, status }: { participantId: string; status: ShareStatus }) =>

@@ -21,6 +21,10 @@
 - Precisa de uma operação nova? Adicione no contrato (`src/data/types.ts`), implemente no mock, escreva o teste e atualize [04](04-camada-de-dados.md).
 - Formulários: um schema Zod em `features/*/schemas.ts` + `useForm({ resolver: zodResolver(schema) })` + `FormInput`.
 
+## Princípios de design (SOLID)
+
+Todo código novo segue [11 · SOLID](11-solid.md). Para criar uma feature, use o **checklist de feature nova** de lá. Para revisar, use o **checklist de PR**.
+
 ## Receitas
 
 ### Adicionar uma tela

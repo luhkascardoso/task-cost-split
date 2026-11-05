@@ -89,7 +89,7 @@ ExpenseFormSheet (UI)
   └─ useForm + zod valida {title, amount(cents), participantIds}
       └─ useSaveExpense().mutateAsync(values)          features/expenses/api.ts
           └─ data.expenses.create(activityId, input)    src/data (contrato)
-               └─ mock: buildShares(...) do domínio e grava no AsyncStorage
+               └─ mock: getExpenseInputError + buildShares(...) do domínio e grava no AsyncStorage
                   (futuro http: POST no backend, que divide e grava)
           └─ onSuccess → invalida queries:
                expenses(activity) · activities · summary · participants

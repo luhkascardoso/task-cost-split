@@ -69,10 +69,16 @@ O que é **derivado** (não precisa ser armazenado):
 
 ## Plugando o backend (quando for a hora)
 
-1. Criar `src/data/http/http-data-source.ts` exportando `createHttpDataSource(): DataSource`.
+1. Criar `src/data/http/http-data-source.ts` exportando `createHttpDataSource(deps): DataSource`. As dependências (URL base, armazenamento de token, `fetch`) entram por parâmetro, como no mock (ver [11 · SOLID](11-solid.md#d--inversão-de-dependência)).
 2. Guardar os tokens com **`expo-secure-store`** (não AsyncStorage) e enviar `Authorization: Bearer <accessToken>`.
 3. Converter respostas HTTP de erro em `DataError` (401 → `unauthorized`, 404 → `not_found`, 409 → `conflict`, 4xx → `invalid`).
 4. Adicionar o `case 'http'` em `src/data/index.ts` e uma env `EXPO_PUBLIC_API_URL`.
-5. Rodar os cenários de teste do mock contra o adaptador.
+5. Rodar a **suíte de contrato** contra o adaptador: `runDataSourceContract('http', () => createHttpDataSource(…))`, de `src/test/data-source-contract.ts`. É a mesma suíte que o mock já passa.
+
+## Testes de contrato
+
+`src/test/data-source-contract.ts` reúne os cenários que **toda** implementação de `DataSource` precisa passar: auth, ordenação, `DataError` com `code`, divisão, isolamento por usuário. O mock a executa em `src/data/__tests__/mock-data-source.test.ts`. Comportamento exclusivo de uma implementação (ex.: persistência no `KeyValueStorage`) é testado só no arquivo dela.
+
+Mudou o contrato em `types.ts`? Atualize a suíte junto.
 
 Nada em `src/app` ou `src/features` precisa mudar.

@@ -3,3 +3,4 @@ export * from './money';
 export * from './split';
 export * from './status';
 export * from './summary';
+export * from './validation';

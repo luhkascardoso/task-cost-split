@@ -6,6 +6,8 @@
 import {
   buildShares,
   getActivityTotals,
+  getExpenseInputError,
+  getParticipantNameError,
   getSummary,
   type Activity,
   type Expense,
@@ -107,11 +109,11 @@ export function createMockDataSource({
     return db.expenses.filter((e) => mine.has(e.activityId));
   }
 
+  /** Regras de negócio vêm do domínio; aqui fica só a checagem de posse (persistência). */
   function validateExpense(db: MockDb, input: ExpenseInput) {
     const ownerId = currentUserId(db);
-    if (!input.title.trim()) throw new DataError('Informe um título');
-    if (!Number.isInteger(input.amount) || input.amount <= 0) throw new DataError('Informe um valor');
-    if (input.participantIds.length === 0) throw new DataError('Adicione pelo menos um participante');
+    const error = getExpenseInputError(input);
+    if (error) throw new DataError(error);
     for (const pid of input.participantIds) {
       if (!db.participants.some((p) => p.id === pid && p.ownerId === ownerId)) {
         throw new DataError('Participante inválido');
@@ -306,7 +308,8 @@ export function createMockDataSource({
       create: (name) =>
         run(
           (db) => {
-            if (!name.trim()) throw new DataError('Informe o nome do participante');
+            const error = getParticipantNameError(name);
+            if (error) throw new DataError(error);
             const participant = { id: newId(), ownerId: currentUserId(db), name: name.trim(), isSelf: false };
             db.participants.push(participant);
             return strip(participant);

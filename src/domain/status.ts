@@ -1,4 +1,4 @@
-import type { ExpenseShare, ExpenseStatus } from './types';
+import type { ExpenseShare, ExpenseStatus, ShareStatus } from './types';
 
 /**
  * Status agregado da despesa (badge do card):
@@ -17,5 +17,11 @@ export function getExpenseStatus(shares: readonly Pick<ExpenseShare, 'status'>[]
 export const expenseStatusLabel: Record<ExpenseStatus, string> = {
   pending: 'Pendente',
   partial: 'Parcial',
+  paid: 'Pago',
+};
+
+/** Status de cada cota (segmented control "Pendente | Pago"). Ordem = ordem de exibição. */
+export const shareStatusLabel: Record<ShareStatus, string> = {
+  pending: 'Pendente',
   paid: 'Pago',
 };
