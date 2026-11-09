@@ -1,13 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import { X } from 'lucide-react-native';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { FormInput } from '@/components/form/FormInput';
 import { Button, Input, Sheet, Text } from '@/components/ui';
 import { maskBRLInput, type Expense } from '@/domain';
-import { colors, sizes, spacing } from '@/theme';
+import { spacing } from '@/theme';
 import { useSaveExpense } from '../api';
 import { expenseFormSchema, type ExpenseFormInput } from '../schemas';
 import { ParticipantPicker } from './ParticipantPicker';
@@ -38,13 +37,11 @@ export function ExpenseFormSheet({ activityId, expense }: { activityId: string; 
 
   return (
     <ScrollView keyboardShouldPersistTaps="handled">
-      <Sheet>
-        <View style={styles.header}>
-          <Text variant="labelMd">{expense ? 'Editar despesa' : 'Nova despesa'}</Text>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Fechar">
-            <X size={sizes.iconSm} color={colors.textSecondary} />
-          </Pressable>
-        </View>
+      <Sheet onClose={() => router.back()}>
+        <Sheet.Header>
+          <Sheet.Title>{expense ? 'Editar despesa' : 'Nova despesa'}</Sheet.Title>
+          <Sheet.Close />
+        </Sheet.Header>
 
         <View style={{ gap: spacing.xs }}>
           <FormInput
@@ -83,7 +80,3 @@ export function ExpenseFormSheet({ activityId, expense }: { activityId: string; 
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-});

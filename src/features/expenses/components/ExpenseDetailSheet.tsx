@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
-import { Pencil, Trash2, X } from 'lucide-react-native';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Pencil, Trash2 } from 'lucide-react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { Avatar, Button, Sheet, StatusBadge, StatusSelect, Text } from '@/components/ui';
 import { formatBRL, getExpenseStatus, type Expense } from '@/domain';
 import { useParticipantNames } from '@/features/participants/hooks';
-import { colors, sizes, spacing } from '@/theme';
+import { colors, spacing } from '@/theme';
 import { useDeleteExpense, useSetShareStatus } from '../api';
 
 /** Sheet: Detalhe da despesa (Figma 5109:1683): marcar cada cota como Pendente/Pago. */
@@ -15,16 +15,14 @@ export function ExpenseDetailSheet({ expense }: { expense: Expense }) {
   const confirmDelete = useConfirmDeleteExpense(expense);
 
   return (
-    <Sheet>
-      <View style={styles.header}>
+    <Sheet onClose={() => router.back()}>
+      <Sheet.Header align="start">
         <View>
           <Text variant="labelLg">{expense.title}</Text>
           <Text variant="labelMd" tone="brand">{formatBRL(expense.amount)}</Text>
         </View>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Fechar">
-          <X size={sizes.iconSm} color={colors.textSecondary} />
-        </Pressable>
-      </View>
+        <Sheet.Close />
+      </Sheet.Header>
 
       <View style={styles.list}>
         <View style={styles.row}>
@@ -50,7 +48,7 @@ export function ExpenseDetailSheet({ expense }: { expense: Expense }) {
         })}
       </View>
 
-      <View style={styles.row}>
+      <Sheet.Footer>
         <Button icon={Trash2} variant="danger" accessibilityLabel="Excluir despesa" onPress={confirmDelete} />
         <Button
           label="Editar"
@@ -63,7 +61,7 @@ export function ExpenseDetailSheet({ expense }: { expense: Expense }) {
             })
           }
         />
-      </View>
+      </Sheet.Footer>
     </Sheet>
   );
 }
@@ -86,7 +84,6 @@ function useConfirmDeleteExpense(expense: Pick<Expense, 'id' | 'activityId' | 't
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   list: { gap: spacing.md, paddingBottom: spacing.md, borderBottomWidth: 1, borderColor: colors.cardBorder },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   person: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

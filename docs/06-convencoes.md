@@ -23,7 +23,7 @@
 
 ## Princípios de design (SOLID)
 
-Todo código novo segue [11 · SOLID](11-solid.md). Para criar uma feature, use o **checklist de feature nova** de lá. Para revisar, use o **checklist de PR**.
+Todo código novo segue [11 · SOLID](11-solid.md) e, para componentes, [12 · Atomic Design e Compound](12-atomic-design-e-compound.md). Para criar uma feature, use o **checklist de feature nova** de lá. Para revisar, use o **checklist de PR**.
 
 ## Receitas
 
@@ -48,11 +48,15 @@ Todo código novo segue [11 · SOLID](11-solid.md). Para criar uma feature, use 
 2. Implemente uma função pura em `src/domain/` e exporte em `index.ts`.
 3. Documente em [05 · Regras](05-regras-de-negocio.md).
 
-### Adicionar um componente de UI
+### Adicionar um componente
+
+Siga a receita de [12 · Atomic Design e Compound](12-atomic-design-e-compound.md#receita-criando-um-componente). Em resumo:
 
 1. Confira o componente no Figma (`get_design_context` pelo MCP do Figma).
-2. Crie em `src/components/ui/`, consumindo **só** tokens do `@/theme`.
-3. Exporte em `components/ui/index.ts` e adicione ao mapa em [02](02-design-system.md).
+2. Escolha o nível (átomo, molécula, organismo, template) e se é genérico (`src/components/ui/<nível>/`) ou de feature (`src/features/*/components/`).
+3. Estado compartilhado entre partes ou estrutura variável → **compound** (Context + `Object.assign`). Senão, props simples.
+4. Use **só** tokens do `@/theme` e peças dos níveis de baixo.
+5. Exporte em `components/ui/index.ts` (na seção do nível) e adicione ao mapa em [02](02-design-system.md).
 
 ### Adicionar uma dependência
 

@@ -1,14 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import { Calendar, Trash2, X } from 'lucide-react-native';
+import { Calendar, Trash2 } from 'lucide-react-native';
 import { useForm } from 'react-hook-form';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import { FormInput } from '@/components/form/FormInput';
 import { Button, Sheet, Text } from '@/components/ui';
 import type { Activity } from '@/domain';
 import { formatShortDate } from '@/lib/date';
-import { colors, sizes, spacing } from '@/theme';
+import { spacing } from '@/theme';
 import { useDeleteActivity, useSaveActivity } from '../api';
 import { activityFormSchema, type ActivityFormInput } from '../schemas';
 
@@ -46,13 +46,11 @@ export function ActivityFormSheet({ activity }: { activity?: Activity }) {
     ]);
 
   return (
-    <Sheet>
-      <View style={styles.header}>
-        <Text variant="labelMd">{isEdit ? 'Editar atividade' : 'Nova atividade'}</Text>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Fechar">
-          <X size={sizes.iconSm} color={colors.textSecondary} />
-        </Pressable>
-      </View>
+    <Sheet onClose={() => router.back()}>
+      <Sheet.Header>
+        <Sheet.Title>{isEdit ? 'Editar atividade' : 'Nova atividade'}</Sheet.Title>
+        <Sheet.Close />
+      </Sheet.Header>
 
       <View style={{ gap: spacing.xs }}>
         <FormInput
@@ -76,7 +74,7 @@ export function ActivityFormSheet({ activity }: { activity?: Activity }) {
       {save.error && <Text variant="textXs" tone="danger">{save.error.message}</Text>}
 
       {isEdit ? (
-        <View style={styles.actions}>
+        <Sheet.Footer>
           <Button
             icon={Trash2}
             variant="danger"
@@ -86,15 +84,10 @@ export function ActivityFormSheet({ activity }: { activity?: Activity }) {
             loading={remove.isPending}
           />
           <Button label="Salvar" onPress={() => onSubmit()} loading={save.isPending} />
-        </View>
+        </Sheet.Footer>
       ) : (
         <Button label="Salvar" block onPress={() => onSubmit()} loading={save.isPending} />
       )}
     </Sheet>
   );
 }
-
-const styles = StyleSheet.create({
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  actions: { flexDirection: 'row', justifyContent: 'space-between' },
-});

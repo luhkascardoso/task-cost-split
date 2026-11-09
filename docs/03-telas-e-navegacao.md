@@ -56,7 +56,7 @@ Deep link: `taskcostsplit://activity/<id>` (scheme no `app.json`).
 ## Sobre os form sheets
 
 - Ficam declarados em `(app)/_layout.tsx` com `presentation: 'formSheet'` e `sheetAllowedDetents: 'fitToContents'`.
-- **Limitação:** não existe header nativo dentro do sheet. Título e botão de fechar (X) são parte do conteúdo (`ui/Sheet`).
+- **Limitação:** não existe header nativo dentro do sheet. Título e botão de fechar (X) são parte do conteúdo, montados com o compound `Sheet` (`<Sheet onClose>` + `Sheet.Header`/`Sheet.Title`/`Sheet.Close`/`Sheet.Footer`, ver [12](12-atomic-design-e-compound.md)).
 - Com `fitToContents`, **não use `flex: 1`** no conteúdo do sheet.
 - No Android, o máximo é de 3 detents.
 - O "Nova atividade" do Figma flutua centralizado com margens. O sheet nativo fica ancorado embaixo. É uma diferença aceita. Se o design exigir, troque por `presentation: 'transparentModal'` com um card centralizado.

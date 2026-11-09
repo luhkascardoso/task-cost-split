@@ -40,3 +40,4 @@ Passo a passo completo em [docs/07-setup.md](docs/07-setup.md).
 | [07 · Setup](docs/07-setup.md) | Ambiente, execução, builds |
 | [08 · Roadmap](docs/08-roadmap.md) | O que está pronto e o que falta |
 | [11 · SOLID](docs/11-solid.md) | Princípios SOLID aplicados às camadas, checklist de feature nova e de PR |
+| [12 · Atomic Design e Compound](docs/12-atomic-design-e-compound.md) | Níveis dos componentes, padrão compound, receita e checklist de componentes |
