@@ -6,6 +6,11 @@ set -euo pipefail
 
 summary="${GITHUB_STEP_SUMMARY:-/dev/stdout}"
 
+if [ "${SKIPPED:-}" = "true" ]; then
+  echo "::error::A claude-code-action pulou o review: o workflow deste PR difere do da branch padrão e a validação do app do Claude recusou o token. Confira se o passo usa github_token." >&2
+  exit 1
+fi
+
 if [ -z "${OUT:-}" ] || ! printf '%s' "$OUT" | jq -e 'type == "object" and has("verdict")' >/dev/null 2>&1; then
   echo "::error::O review não devolveu um veredito. Veja o log do passo 'Review com Claude' (secret ausente ou erro na execução)." >&2
   exit 1
