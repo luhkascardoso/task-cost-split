@@ -19,13 +19,22 @@ const model = (() => {
 })();
 const shortSha = (env.HEAD_SHA || '').slice(0, 7);
 
-// Célula de tabela markdown: sem quebra de linha e com | escapado.
-const cell = (text) => String(text ?? '').replace(/\|/g, '\\|').replace(/\r?\n+/g, '<br>').trim();
+// Texto vindo do modelo é dado não confiável (o diff pode tentar injetar conteúdo):
+// sem menções (@ notifica pessoas), sem HTML e sem links/imagens markdown.
+const neutralize = (text) => String(text ?? '')
+  .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/@/g, '@\u200b')
+  .replace(/\[/g, '\\[').replace(/\]/g, '\\]');
+// Célula de tabela markdown: neutralizada, sem quebra de linha e com | escapado.
+const cell = (text) => neutralize(text).replace(/\|/g, '\\|').replace(/\r?\n+/g, '<br>').trim();
+// Caminho de arquivo em code span e em URL.
+const code = (path) => `\`${String(path ?? '').replace(/`/g, "'")}\``;
+const urlPath = (path) => String(path ?? '').split('/').map(encodeURIComponent).join('/');
 const lines = (f) => (!f.line_start ? '—' : f.line_end && f.line_end !== f.line_start ? `L${f.line_start}-L${f.line_end}` : `L${f.line_start}`);
 const fileLink = (f) => {
   const name = f.file.split('/').pop();
   const anchor = f.line_start ? `#L${f.line_start}${f.line_end && f.line_end !== f.line_start ? `-L${f.line_end}` : ''}` : '';
-  return `[${cell(name)}](https://github.com/${env.REPO}/blob/${env.HEAD_SHA}/${f.file}${anchor})`;
+  return `[${cell(name)}](https://github.com/${env.REPO}/blob/${env.HEAD_SHA}/${urlPath(f.file)}${anchor})`;
 };
 
 const SECTIONS = [
@@ -65,7 +74,7 @@ function render() {
     `**Modelo:** ${model}  `, `**Commit:** \`${shortSha}\`  `, `**Arquivos analisados:** ${files.length}`, ''];
 
   if (files.length) {
-    out.push('<details><summary>Ver arquivos</summary>', '', files.map((f) => `\`${f}\``).join(', '), '', '</details>', '');
+    out.push('<details><summary>Ver arquivos</summary>', '', files.map(code).join(', '), '', '</details>', '');
   }
   if (review.summary) out.push(`> ${cell(review.summary).replace(/<br>/g, '\n> ')}`, '');
 
@@ -95,7 +104,7 @@ function render() {
   out.push('---', '', '### 📊 Decisão Final', '', `**Status:** ${status}  `, `**Motivo:** ${reason}  `, `**Ação necessária:** ${action}`);
   const steps = SECTIONS.flatMap((s) => by(s.key)).filter((f) => f.fix);
   if (steps.length) {
-    out.push('', '**Próximos passos:**', '', ...steps.map((f, i) => `${i + 1}. ${cell(f.fix)} (\`${f.file}${f.line_start ? `:${f.line_start}` : ''}\`)`));
+    out.push('', '**Próximos passos:**', '', ...steps.map((f, i) => `${i + 1}. ${cell(f.fix)} (${code(`${f.file}${f.line_start ? `:${f.line_start}` : ''}`)})`));
   }
   out.push('', footer);
   return out.join('\n');
@@ -114,7 +123,8 @@ async function upsert(body) {
   const base = `/repos/${env.REPO}/issues`;
   for (let page = 1; ; page++) {
     const comments = await gh(`${base}/${env.PR_NUMBER}/comments?per_page=100&page=${page}`);
-    const mine = comments.find((c) => c.body?.includes(MARKER));
+    // Só o comentário do próprio bot: outro usuário pode colar o marcador num comentário dele.
+    const mine = comments.find((c) => c.user?.type === 'Bot' && c.user?.login === 'github-actions[bot]' && c.body?.includes(MARKER));
     if (mine) return gh(`${base}/comments/${mine.id}`, { method: 'PATCH', body: JSON.stringify({ body }) }).then(() => 'atualizado');
     if (comments.length < 100) break;
   }

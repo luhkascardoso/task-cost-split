@@ -27,10 +27,11 @@ concurrency:
 jobs:
   review:
     name: review
-    # Rascunho não é revisado (não pode ser mergeado). Push na branch padrão já veio de um PR revisado.
+    # Em PR o job sempre roda (um job "skipped" contaria como aprovado no check obrigatório).
+    # Push na branch padrão não é revisado: ela só recebe merge de PR já revisado.
     if: >-
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
-      (github.event_name != 'pull_request' && github.ref_name != github.event.repository.default_branch)
+      github.event_name == 'pull_request' ||
+      github.ref_name != github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -56,15 +57,28 @@ jobs:
 
       - name: Origem do gate
         id: gate
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           gate_files=".github/scripts/review-scope.sh .github/scripts/review-verdict.sh .github/scripts/review-comment.mjs .github/review-schema.json"
-          dir=.gate-base
-          for f in $gate_files; do [ -f ".gate-base/$f" ] || dir=.; done
-          if [ "$dir" = . ] && [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            echo "::warning::A branch base ainda não tem todos os scripts do gate; usando os do PR (só no PR que os instala)."
+          dir=.gate-base; present=0
+          for f in $gate_files; do
+            if [ -f ".gate-base/$f" ]; then present=$((present + 1)); else dir=.; fi
+          done
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ] && [ "$dir" = . ]; then
+            # Falha fechada: os scripts do PR só valem no bootstrap, isto é, no PR para a branch
+            # padrão que ainda não tem NENHUM deles. Qualquer outro caso seria o PR se autoavaliando.
+            if [ "$BASE_REF" = "$DEFAULT_BRANCH" ] && [ "$present" -eq 0 ]; then
+              echo "::warning::Bootstrap: a branch padrão ainda não tem os scripts do gate; usando os do PR. Depois do merge, todo PR usa os da base."
+            else
+              echo "::error::A branch base ($BASE_REF) não tem todos os scripts do gate ($present de 4). Atualize-a a partir de $DEFAULT_BRANCH antes de abrir o PR, ou faça o merge como admin."
+              exit 1
+            fi
           fi
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
-          echo "schema=$(jq -c . "$dir/.github/review-schema.json")" >> "$GITHUB_OUTPUT"
+          # O schema vai entre aspas simples no claude_args: apóstrofo vira \u0027 (JSON válido).
+          echo "schema=$(jq -c . "$dir/.github/review-schema.json" | sed "s/'/\\\\u0027/g")" >> "$GITHUB_OUTPUT"
 
       - name: Escopo do review
         id: scope
@@ -73,6 +87,7 @@ jobs:
           EVENT: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           IS_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+          IS_DRAFT: ${{ github.event.pull_request.draft == true }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           BEFORE_SHA: ${{ github.event.before }}

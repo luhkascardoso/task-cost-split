@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Decide se o code review roda e prepara o diff para o revisor em $CTX_DIR.
 # Saídas em $GITHUB_OUTPUT: run, mode (pr|push), base, head, files, reason.
-# Entradas (env): EVENT, PR_NUMBER, IS_FORK, PR_BASE_SHA, PR_HEAD_SHA, BEFORE_SHA, SHA,
+# Entradas (env): EVENT, PR_NUMBER, IS_FORK, IS_DRAFT, PR_BASE_SHA, PR_HEAD_SHA, BEFORE_SHA, SHA,
 #                 BRANCH, DEFAULT_BRANCH, CTX_DIR
 set -euo pipefail
 
@@ -17,6 +17,10 @@ CTX_DIR=${CTX_DIR:-.review-ctx}
 mkdir -p "$CTX_DIR"
 
 if [ "$EVENT" = "pull_request" ]; then
+  if [ "${IS_DRAFT:-false}" = "true" ]; then
+    echo "::error::PR em rascunho não é revisado. Marque como pronto para revisão (Ready for review) e o review roda." >&2
+    exit 1
+  fi
   if [ "${IS_FORK:-false}" = "true" ]; then
     echo "::error::PR de fork não recebe os secrets, então não pode ser revisado automaticamente. Revise manualmente e faça o merge como admin." >&2
     exit 1

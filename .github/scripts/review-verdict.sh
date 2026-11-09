@@ -2,7 +2,7 @@
 # Decide o check obrigatório "review" a partir do resultado estruturado do revisor.
 # Entrada (env): OUT = structured_output da claude-code-action (JSON); SKIPPED.
 # Reprova se: não houver resultado, o veredito for request_changes, ou existir achado
-# crítico/alto confirmado (recalculado aqui, sem confiar só no que o modelo declarou).
+# crítico (mesmo duvidoso) ou alto confirmado (recalculado aqui, sem confiar só no que o modelo declarou).
 # No PR, este script vem da branch base: o próprio PR não consegue trocá-lo.
 set -euo pipefail
 
@@ -22,8 +22,10 @@ case "$verdict" in approve|approve_with_changes|request_changes) ;; *)
 esac
 
 declared=$(printf '%s' "$OUT" | jq -r '.blocking // 0')
-counted=$(printf '%s' "$OUT" | jq -r '[.findings[]? | select((.possible_false_positive | not) and (.severity == "critico" or .severity == "alto"))] | length')
-read -r crit high med low <<<"$(printf '%s' "$OUT" | jq -r '[.findings[]? | select(.possible_false_positive | not)] as $f
+# Crítico bloqueia SEMPRE, mesmo marcado como possível falso positivo: marcar como dúvida não
+# pode virar atalho para aprovar. Alto duvidoso não bloqueia, mas aparece no comentário.
+counted=$(printf '%s' "$OUT" | jq -r '[.findings[]? | select(.severity == "critico" or (.severity == "alto" and (.possible_false_positive | not)))] | length')
+read -r crit high med low <<<"$(printf '%s' "$OUT" | jq -r '[.findings[]? | select((.possible_false_positive | not) or .severity == "critico")] as $f
   | [($f|map(select(.severity=="critico"))|length), ($f|map(select(.severity=="alto"))|length),
      ($f|map(select(.severity=="medio"))|length), ($f|map(select(.severity=="baixo"))|length)] | @tsv')"
 
