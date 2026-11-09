@@ -50,6 +50,15 @@ Sem mudanças no escopo → diga isso em uma linha e pare.
 - Chaves novas em `queryKeys`, sem mudar as existentes.
 - Toda mutation declara o que invalida; a tabela de invalidação em `docs/01` acompanha.
 - Hooks recebem só o que usam (`Pick<>`), um hook por operação.
+- Todo parâmetro que muda o resultado está na `queryKey`; nada sensível nela (`docs/01` · Regras de cache).
+- **Mutation com `retry` diferente de `false`** (ou que sobrescreve o padrão do `QueryClient`) → alto: escrita repetida é dinheiro duplicado (`docs/05` · Dinheiro e duplicidade).
+- Query de leitura com `retry` próprio que repete erro não transitório (`unauthorized`, `invalid`…) → médio.
+
+### Erros (`docs/04` · Erros)
+- Camada de dados lança `Error` genérico ou mascara o erro com `throw new Error('Falha…')` em vez de `DataError` com código → alto.
+- Tela mostra `error.message` direto em vez de `errorMessage(error)` de `@/lib/error-message` → médio (vaza mensagem técnica).
+- `mutateAsync` sem tratamento da rejeição, ou update otimista que reverte sem avisar → médio (falha silenciosa).
+- `catch` que só retorna é aceitável **quando** o erro já aparece por outro caminho (ex.: `save.error` no formulário) e um comentário diz isso. Sem esse caminho, é erro engolido.
 
 ### Componentes e estilo
 - Nível atômico certo e imports só de níveis abaixo; import sempre de `@/components/ui`.
@@ -57,7 +66,7 @@ Sem mudanças no escopo → diga isso em uma linha e pare.
 - Átomo recriado dentro de uma feature em vez de reutilizado.
 - Props de slot ou estado compartilhado entre partes → deveria ser compound? Compound segue o molde (Context + guarda + `useMemo` + `Object.assign` + teste).
 - **testIDs usados pelo Maestro não podem sumir nem mudar** sem atualizar `.maestro/`. Confira com `grep -rn "<testID>" .maestro`.
-- Botões só com ícone têm `accessibilityLabel`.
+- Acessibilidade (`docs/12` · Acessibilidade): botão só com ícone tem `accessibilityLabel` significativo; papel e estado (`accessibilityRole`/`accessibilityState`); área de toque ≥ 44; status nunca só por cor; erro e confirmação anunciados. Token de texto novo com contraste < 4.5:1 → médio.
 - Variações por `if`/ternário sobre status, variante ou tipo → preferir `Record<…>` (O do SOLID).
 
 ### Expo e plataforma
@@ -68,7 +77,8 @@ Sem mudanças no escopo → diga isso em uma linha e pare.
 ### Segurança e robustez
 - Segredo, token ou `.env*.local` no código ou em log.
 - Dado sensível em `AsyncStorage` (tokens vão para `expo-secure-store` quando houver backend).
-- Erro engolido (`catch` vazio), promessa sem tratamento, estado de loading ou erro faltando em tela que busca dados.
+- Erro engolido (`catch` vazio sem caminho alternativo de exibição), promessa sem tratamento, estado de loading ou erro faltando em tela que busca dados.
+- Dado pessoal ou credencial em `console.log`, mesmo temporário.
 
 ### Gates de qualidade (`.github/`, `.claude/`, `AGENTS.md`, `CLAUDE.md`, `.githooks/`, `package.json`, `tsconfig.json`, `eslint.config.js`)
 - Mudança que **enfraquece um gate** → alto, salvo se o PR explica e justifica: remover ou pular passo do CI, baixar `coverageThreshold`, afrouxar `strict`/regras de lint, `--no-verify`, `continue-on-error`, desligar hooks, liberar permissões no `.claude/settings.json`, fazer `review-verdict.sh` ou o workflow de review aprovar sem veredito, ampliar a lista `IGNORED` em `review-scope.sh`, ou rodar scripts do gate ou instruções do revisor a partir do PR em vez da branch base.

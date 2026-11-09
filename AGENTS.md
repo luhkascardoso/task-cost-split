@@ -50,6 +50,10 @@ App de divisão de despesas. Leia `README.md` e `docs/` antes de mudar algo estr
 - Estilos só via tokens de `@/theme` (extraídos do Figma) e componentes de `@/components/ui`. Mapa Figma→código em `docs/02-design-system.md`; nodes de cada tela em `docs/03-telas-e-navegacao.md`.
 - Sheets são rotas `presentation: 'formSheet'` registradas em `src/app/(app)/_layout.tsx` (sem header nativo, sem `flex: 1` com `fitToContents`).
 - Dados só via o contrato `DataSource` (`src/data/types.ts`) importando `data` de `@/data`; nunca importe `src/data/mock` fora de `src/data`. Hooks nas features, invalidação via `queryKeys`.
+- Erros: tudo sai da camada de dados como `DataError` com `code` (`docs/04-camada-de-dados.md#erros`). Tela mostra `errorMessage(error)` de `@/lib/error-message`; nunca `error.message` de erro qualquer. Quem chama `mutateAsync` trata a rejeição.
+- Dinheiro e duplicidade (`docs/05-regras-de-negocio.md#dinheiro-e-duplicidade`): mutation nunca tem retry automático; botão da operação com `loading={mutation.isPending}`.
+- Acessibilidade é requisito: checklist em `docs/12-atomic-design-e-compound.md#acessibilidade`.
+- Trabalho de IA é revisado por gente: `docs/13-ia-no-desenvolvimento.md`.
 - Não há backend ainda (decisão do usuário: backend próprio, a ser feito depois — não criar servidor sem pedido). O app roda com a implementação `mock` (AsyncStorage). Ver `docs/04-camada-de-dados.md`.
 - Siga os princípios SOLID de `docs/11-solid.md` (checklist de feature nova e de PR). Ao tocar um arquivo listado em "Débitos conhecidos", corrija o débito ou não o agrave.
 - Node >= 22.13. Antes de concluir: `npm run typecheck && npm run lint && npm test`.

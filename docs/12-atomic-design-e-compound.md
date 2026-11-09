@@ -166,8 +166,25 @@ Regras:
 - [ ] O compound segue o molde (Context + guarda + `useMemo` + `Object.assign` + teste)?
 - [ ] Os testIDs do Maestro foram mantidos?
 - [ ] O JSDoc diz o nível e o node do Figma? O mapa de [02](02-design-system.md) foi atualizado?
+- [ ] Passa no checklist de [Acessibilidade](#acessibilidade)?
 
 ---
+
+## Acessibilidade
+
+Requisito de todo componente, não polimento. Regras:
+
+| Regra | Como no projeto | Situação |
+|---|---|---|
+| **Rótulo significativo** em todo elemento tocável | `accessibilityLabel` em botão só de ícone ("Excluir despesa", não "Botão 1"). Sem redundância: "Enviar", não "Botão Enviar, botão" | Botões de ícone já têm; conferir a cada componente novo |
+| **Papel e estado** | `accessibilityRole` (`button`, `tab`, `checkbox`…) e `accessibilityState` (`selected`, `disabled`, `busy`) | `Button` define `role="button"` |
+| **Área de toque ≥ 44×44** | `sizes.controlHeight` = 48. Ícones menores usam `hitSlop` | Botões e inputs ok |
+| **Contraste ≥ 4.5:1** (texto) e 3:1 (texto grande, ícones) | Medir o token contra `background` e `surface` antes de usar | **`textMuted` dá 2,79:1, abaixo do mínimo** (ver roadmap) |
+| **Não depender só de cor** | Status sempre com texto: `StatusBadge` usa os rótulos de `status.ts` (Pago/Pendente/Parcial) | Ok |
+| **Anunciar mudanças** | Mensagens de erro e confirmações com `accessibilityLiveRegion="polite"` (Android) ou `AccessibilityInfo.announceForAccessibility` | Erro de status no detalhe da despesa já usa |
+| **Ordem de leitura natural** | A ordem dos elementos no JSX segue a leitura visual | Conferir em sheets com rodapé |
+
+Teste com leitor de tela (VoiceOver no iOS, TalkBack no Android) os fluxos de [03](03-telas-e-navegacao.md#fluxos-principais) a cada mudança visual relevante. Nos testes de componente, prefira as queries por papel e nome (`getByRole('button', { name: 'Salvar' })`), que já validam parte disso ([09](09-testes.md)).
 
 ## Candidatos conhecidos
 
