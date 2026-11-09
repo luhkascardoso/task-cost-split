@@ -17,10 +17,9 @@ CTX_DIR=${CTX_DIR:-.review-ctx}
 mkdir -p "$CTX_DIR"
 
 if [ "$EVENT" = "pull_request" ]; then
-  if [ "${IS_DRAFT:-false}" = "true" ]; then
-    echo "::error::PR em rascunho não é revisado. Marque como pronto para revisão (Ready for review) e o review roda." >&2
-    exit 1
-  fi
+  # Rascunho: não revisa e não reprova. Rascunho não pode ser mergeado; ao marcar
+  # "Ready for review" o evento ready_for_review roda o review e o check volta a pendente.
+  [ "${IS_DRAFT:-false}" = "true" ] && skip "PR em rascunho; o review roda ao marcar Ready for review"
   if [ "${IS_FORK:-false}" = "true" ]; then
     echo "::error::PR de fork não recebe os secrets, então não pode ser revisado automaticamente. Revise manualmente e faça o merge como admin." >&2
     exit 1

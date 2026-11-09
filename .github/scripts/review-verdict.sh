@@ -21,6 +21,14 @@ case "$verdict" in approve|approve_with_changes|request_changes) ;; *)
   echo "::error::Veredito desconhecido: $verdict" >&2; exit 1 ;;
 esac
 
+# Mesmo contrato do review-comment.mjs: achado com severidade ou arquivo inválido = resultado inválido.
+if ! printf '%s' "$OUT" | jq -e '((.blocking // 0) | type == "number" and . == floor and . >= 0)
+     and ((.findings // []) | type == "array" and all(.[]; type == "object"
+     and (.severity | IN("critico","alto","medio","baixo")) and (.file | type == "string" and length > 0)))' >/dev/null; then
+  echo "::error::Resultado do review fora do formato (blocking, severidade ou arquivo inválido)." >&2
+  exit 1
+fi
+
 declared=$(printf '%s' "$OUT" | jq -r '.blocking // 0')
 # Crítico bloqueia SEMPRE, mesmo marcado como possível falso positivo: marcar como dúvida não
 # pode virar atalho para aprovar. Alto duvidoso não bloqueia, mas aparece no comentário.
