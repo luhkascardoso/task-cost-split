@@ -42,3 +42,4 @@ Passo a passo completo em [docs/07-setup.md](docs/07-setup.md).
 | [11 · SOLID](docs/11-solid.md) | Princípios SOLID aplicados às camadas, checklist de feature nova e de PR |
 | [12 · Atomic Design e Compound](docs/12-atomic-design-e-compound.md) | Níveis dos componentes, padrão compound, receita, checklist e acessibilidade |
 | [13 · IA no desenvolvimento](docs/13-ia-no-desenvolvimento.md) | O que cada gate garante, quem faz o quê, cenários e checklist para aprovar trabalho de IA |
+| [14 · Board (Linear) e agentes](docs/14-board-linear-e-agentes.md) | Integração Linear ↔ GitHub, agente na nuvem por label e Claude Code com o MCP do Linear |

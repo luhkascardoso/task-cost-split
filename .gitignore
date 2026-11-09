@@ -47,3 +47,6 @@ coverage/
 
 # Maestro E2E reports / artifacts
 build/
+
+# Rascunhos do agente na nuvem (corpo do PR)
+.agent/
