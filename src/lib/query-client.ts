@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, type DefaultOptions } from '@tanstack/react-query';
 
 import { isRecoverableError } from '@/data/errors';
 
@@ -10,18 +10,25 @@ export function shouldRetryQuery(failureCount: number, error: unknown): boolean 
   return isRecoverableError(error) && failureCount < MAX_QUERY_RETRIES;
 }
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: shouldRetryQuery,
-    },
-    mutations: {
-      // Escrita NUNCA é repetida automaticamente: criar despesa ou marcar "Pago" duas vezes
-      // é erro de dinheiro. Nova tentativa só quando o usuário pede (docs/05).
-      retry: false,
-    },
+/**
+ * Opções de produção do QueryClient.
+ * Nos testes o singleton recebe override (`retry: false`) em `jest.setup.ts`;
+ * a política real fica aqui para ser exercida e auditada sem depender do client mutado.
+ */
+export const queryClientDefaultOptions = {
+  queries: {
+    staleTime: 30_000,
+    retry: shouldRetryQuery,
   },
+  mutations: {
+    // Escrita NUNCA é repetida automaticamente: criar despesa ou marcar "Pago" duas vezes
+    // é erro de dinheiro. Nova tentativa só quando o usuário pede (docs/05).
+    retry: false,
+  },
+} satisfies DefaultOptions;
+
+export const queryClient = new QueryClient({
+  defaultOptions: queryClientDefaultOptions,
 });
 
 /**

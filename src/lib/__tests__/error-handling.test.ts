@@ -2,7 +2,7 @@ import { DataError } from '@/data/types';
 import { DEFAULT_ERROR_MESSAGES } from '@/data/errors';
 
 import { errorMessage } from '../error-message';
-import { MAX_QUERY_RETRIES, queryClient, shouldRetryQuery } from '../query-client';
+import { MAX_QUERY_RETRIES, queryClientDefaultOptions, shouldRetryQuery } from '../query-client';
 
 describe('errorMessage', () => {
   it('usa a mensagem do DataError, já pronta para a UI', () => {
@@ -33,10 +33,11 @@ describe('política de retry do QueryClient', () => {
   });
 
   it('o QueryClient usa essa política nas queries', () => {
-    expect(queryClient.getDefaultOptions().queries?.retry).toBe(shouldRetryQuery);
+    // Assert nas opções de produção: o singleton é sobrescrito em jest.setup (`retry: false`).
+    expect(queryClientDefaultOptions.queries.retry).toBe(shouldRetryQuery);
   });
 
   it('mutations nunca são repetidas automaticamente (escrita de dinheiro)', () => {
-    expect(queryClient.getDefaultOptions().mutations?.retry).toBe(false);
+    expect(queryClientDefaultOptions.mutations.retry).toBe(false);
   });
 });
