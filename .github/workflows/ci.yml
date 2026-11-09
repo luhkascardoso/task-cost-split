@@ -1,0 +1,59 @@
+# Gate de qualidade de todo PR (humano ou agente).
+# Mesmo critério do AGENTS.md: typecheck + lint + testes, agora com cobertura mínima.
+# Para tornar obrigatório: Settings → Branches → regra para `main` → exigir o check "CI / checks".
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPO_PUBLIC_DATA_SOURCE: mock
+      EXPO_NO_TELEMETRY: 1
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # expo-env.d.ts e .expo/types (typed routes) são gerados e estão no .gitignore.
+      # Sem eles o typecheck aceitaria qualquer string como rota.
+      - name: Gerar tipos do Expo (typed routes)
+        run: npx expo customize tsconfig.json
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      # Falha se src/domain ou src/data ficarem abaixo do limite em package.json → jest.coverageThreshold
+      - name: Testes + cobertura
+        run: npm run test:coverage -- --ci
+
+      - name: Publicar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7

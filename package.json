@@ -53,7 +53,8 @@
     "e2e": "maestro test .maestro",
     "e2e:smoke": "maestro test --include-tags=smoke .maestro",
     "e2e:report": "maestro test --format html-detailed --output build/maestro-report.html .maestro",
-    "e2e:prepare-ios": "bash scripts/disable-ios-password-autofill.sh"
+    "e2e:prepare-ios": "bash scripts/disable-ios-password-autofill.sh",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "private": true,
   "jest": {
@@ -73,7 +74,21 @@
       "!src/**/__tests__/**",
       "!src/test/**",
       "!src/app/**/_layout.tsx"
-    ]
+    ],
+    "coverageThreshold": {
+      "./src/domain/": {
+        "statements": 90,
+        "branches": 85,
+        "functions": 95,
+        "lines": 90
+      },
+      "./src/data/": {
+        "statements": 75,
+        "branches": 60,
+        "functions": 75,
+        "lines": 75
+      }
+    }
   },
   "engines": {
     "node": ">=22.13.0"
