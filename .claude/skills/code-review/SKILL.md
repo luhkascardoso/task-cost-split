@@ -89,9 +89,9 @@ Sem mudanças no escopo → diga isso em uma linha e pare.
 - ⚠️ **Alto**: regra de negócio ou de arquitetura violada (camadas, contrato `DataSource`), testID do E2E quebrado, gate de qualidade enfraquecido, regra de domínio sem teste.
 - 🟡 **Médio**: convenção do projeto, teste ou doc que a regra exige, risco de manutenção.
 - 🔵 **Baixo**: melhoria opcional. No máximo 3 por review.
-- ❔ **Possível falso positivo**: suspeita que você não conseguiu confirmar lendo o código. Marque assim em vez de inflar a severidade; não conta para o veredito.
+- ❔ **Possível falso positivo**: suspeita que você não conseguiu confirmar lendo o código. Marque assim em vez de inflar a severidade. Alto, médio ou baixo marcados assim **não contam** para o veredito. **Crítico conta sempre**, mesmo marcado assim: se não tem certeza de que é crítico, classifique como alto duvidoso.
 
-Crítico e alto **reprovam o check e bloqueiam o merge**. Só use quando confirmou no código. Na dúvida entre alto e médio, use médio e explique.
+Crítico (sempre) e alto confirmado **reprovam o check e bloqueiam o merge**. Só use quando confirmou no código. Na dúvida entre alto e médio, use médio e explique.
 
 Cada achado: **onde** (arquivo e linhas no arquivo novo), **título curto**, **o problema e o impacto**, **critério** (a regra ou o doc, ex.: `docs/05 · Dinheiro em centavos`) e **como corrigir** em uma frase.
 
@@ -102,8 +102,8 @@ A action pede uma **saída estruturada** (JSON). O workflow monta com ela o come
 - **Não poste comentário de resumo** no PR; ele é gerado a partir da saída.
 - No modo CI, além disso, faça um comentário inline por achado crítico, alto ou médio com `mcp__github_inline_comment__create_inline_comment` (`confirmed: true`, `side: RIGHT`, linha do arquivo novo). Use bloco ```` ```suggestion ```` só quando a troca for completa e válida.
 - Preencha a saída:
-  - `verdict`: `request_changes` se houver crítico ou alto confirmado; `approve_with_changes` se só médio ou baixo; `approve` sem achados.
-  - `blocking`: número de críticos + altos confirmados.
+  - `verdict`: `request_changes` se houver crítico (mesmo duvidoso) ou alto confirmado; `approve_with_changes` se só médio, baixo ou duvidosos não críticos; `approve` sem achados.
+  - `blocking`: número de críticos (inclusive duvidosos) + altos confirmados. O check recalcula esse número a partir dos achados; se divergir, reprova.
   - `summary`: 2 a 4 frases sobre o que a mudança faz e o ponto principal do review.
   - `findings`: um item por achado, com `severity` (`critico`, `alto`, `medio`, `baixo`), `file`, `line_start`, `line_end`, `title`, `problem`, `criterion`, `fix` e `possible_false_positive`.
   - `checklist`: as áreas da seção 3 que você verificou (ex.: "Dinheiro e regras de negócio", "Camadas e dependências", "Contrato DataSource", "React Query", "Componentes e estilo", "Expo e plataforma", "Segurança", "Gates de qualidade", "Testes", "Docs"), cada uma com quantos achados teve.

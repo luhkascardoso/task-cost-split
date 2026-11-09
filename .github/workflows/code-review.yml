@@ -70,7 +70,8 @@ jobs:
             # Falha fechada: os scripts do PR só valem no bootstrap, isto é, no PR para a branch
             # padrão que ainda não tem NENHUM deles. Qualquer outro caso seria o PR se autoavaliando.
             if [ "$BASE_REF" = "$DEFAULT_BRANCH" ] && [ "$present" -eq 0 ]; then
-              echo "::warning::Bootstrap: a branch padrão ainda não tem os scripts do gate; usando os do PR. Depois do merge, todo PR usa os da base."
+              echo "::warning::Bootstrap: a branch padrão ainda não tem os scripts do gate; usando os do PR (scripts e instruções do revisor). Depois do merge, todo PR usa os da base."
+              echo "bootstrap=true" >> "$GITHUB_OUTPUT"
             else
               echo "::error::A branch base ($BASE_REF) não tem todos os scripts do gate ($present de 4). Atualize-a a partir de $DEFAULT_BRANCH antes de abrir o PR, ou faça o merge como admin."
               exit 1
@@ -101,7 +102,9 @@ jobs:
       # As versões do PR ficam em $CTX_DIR/pr-versions com nomes que o Claude Code não carrega
       # como instrução (.claude → dot-claude, sufixo .pr.txt): o revisor lê, mas não obedece.
       - name: Instruções do revisor da branch base
-        if: steps.scope.outputs.run == 'true' && steps.scope.outputs.mode == 'pr'
+        # No bootstrap (mesma condição em que os scripts do PR são aceitos), as instruções do PR
+        # também valem: a base ainda não tem a skill, e apagá-la faria o review rodar sem regras.
+        if: steps.scope.outputs.run == 'true' && steps.scope.outputs.mode == 'pr' && steps.gate.outputs.bootstrap != 'true'
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: |
