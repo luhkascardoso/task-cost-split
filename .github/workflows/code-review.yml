@@ -3,7 +3,9 @@
 #
 #  - PR para QUALQUER branch: comentário único no PR (atualizado a cada push) com veredito,
 #    achados por severidade, checklist e decisão final, além de comentários nas linhas.
-#  - Push em QUALQUER branch sem PR aberto: o mesmo relatório no resumo da execução.
+#  - Branch sem PR: disparo manual (Actions → Code review → Run workflow → escolher a branch);
+#    o relatório sai no resumo da execução. Não há gatilho de push: a claude-code-action não
+#    suporta o evento push, e o check obrigatório já vem da execução do PR.
 #  - Só docs/markdown/assets: passa sem chamar o revisor.
 #
 # Segurança: em PR, tudo que decide ou publica o resultado vem da branch BASE, e não do PR:
@@ -16,8 +18,6 @@ name: Code review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-  push:
-    branches: ["**"]
   workflow_dispatch:
 
 concurrency:
@@ -28,7 +28,7 @@ jobs:
   review:
     name: review
     # Em PR o job sempre roda (um job "skipped" contaria como aprovado no check obrigatório).
-    # Push na branch padrão não é revisado: ela só recebe merge de PR já revisado.
+    # Disparo manual na branch padrão não é revisado: ela só recebe merge de PR já revisado.
     if: >-
       github.event_name == 'pull_request' ||
       github.ref_name != github.event.repository.default_branch
