@@ -8,6 +8,9 @@ export const palette = {
   gray100: '#fafafa',
   gray200: '#e1e1e6',
   gray300: '#92929a',
+  // Fora do Figma: tom de texto apagado com contraste WCAG ≥ 4.5:1 sobre gray800 (4,88:1)
+  // e gray700 (4,64:1). O gray400 do Figma dava 2,79:1 e 2,65:1 (LUH-5).
+  gray350: '#7e7e86',
   gray400: '#585860',
   gray500: '#2a2a2d',
   gray600: '#1c1c22',
@@ -38,7 +41,7 @@ export const colors = {
 
   textPrimary: palette.gray100,
   textSecondary: palette.gray300,
-  textMuted: palette.gray400,
+  textMuted: palette.gray350,
   textOnBrand: palette.gray800,
 
   brand: palette.greenBase,
