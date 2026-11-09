@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Limpa a mensagem de commit antes de gravar (vale para pessoas e agentes).
+# - Remove linhas "Claude-Session: …": a mensagem do commit vira a descrição do PR
+#   quando o PR tem um único commit, e esse link não ajuda quem revisa.
+# - Remove linhas em branco sobrando no fim.
+set -euo pipefail
+
+msg_file="$1"
+tmp="$(mktemp)"
+grep -v -i '^Claude-Session:' "$msg_file" > "$tmp" || true
+# apaga linhas em branco no fim do arquivo
+awk 'NF { for (i = 0; i < blank; i++) print ""; blank = 0; print; next } { blank++ }' "$tmp" > "$msg_file"
+rm -f "$tmp"

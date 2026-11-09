@@ -1,3 +1,8 @@
+<!--
+Se o GitHub colou a mensagem do commit aqui em cima, mova o texto para "Objetivo" e apague a cópia.
+Apague as seções que não se aplicam. Card do Linear: "Fixes LUH-n". Issue do GitHub: "Closes #n".
+-->
+
 ## Objetivo
 
 <!-- O que muda para quem usa o app, em 1 ou 2 frases. Link da issue: Closes #… -->

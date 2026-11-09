@@ -58,4 +58,11 @@ App de divisão de despesas. Leia `README.md` e `docs/` antes de mudar algo estr
 - Não há backend ainda (decisão do usuário: backend próprio, a ser feito depois — não criar servidor sem pedido). O app roda com a implementação `mock` (AsyncStorage). Ver `docs/04-camada-de-dados.md`.
 - Siga os princípios SOLID de `docs/11-solid.md` (checklist de feature nova e de PR). Ao tocar um arquivo listado em "Débitos conhecidos", corrija o débito ou não o agrave.
 - Node >= 22.13. Antes de concluir: `npm run typecheck && npm run lint && npm test`.
+
+## Commits e PRs
+
+- **Commit:** assunto no padrão `tipo(escopo): resumo` (`feat`, `fix`, `docs`, `chore`, `ci`, `test`, `refactor`), em português, até ~72 caracteres. Corpo opcional, curto: o porquê em 1 a 3 linhas ou bullets. Nada de relatório.
+- **Sem `Claude-Session`** na mensagem (o hook `.githooks/commit-msg` remove). `Co-Authored-By` é aceito.
+- **A mensagem vira a descrição do PR** quando o PR tem um único commit: escreva pensando em quem revisa.
+- **Descrição do PR:** preencha `.github/pull_request_template.md` (Objetivo, Tipo de mudança, Como testar, checklist) e apague as seções que não se aplicam. Issue do Linear: `Fixes LUH-n`; issue do GitHub: `Closes #n`.
 - Code review: a skill `.claude/skills/code-review` aplica estas regras. Rode `/code-review` antes de abrir PR; no GitHub ela roda em todo PR (e sob demanda numa branch sem PR, pelo Run workflow) (`.github/workflows/code-review.yml`), e o veredito ⛔ reprova o check obrigatório `review` e bloqueia o merge.
