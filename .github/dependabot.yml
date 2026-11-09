@@ -1,0 +1,65 @@
+# Dependabot: PRs semanais de atualização e PRs de segurança.
+# Os PRs passam pelos mesmos gates (CI + code review). Para o review rodar neles, crie o
+# secret CLAUDE_CODE_OAUTH_TOKEN (ou ANTHROPIC_API_KEY) TAMBÉM em
+# Settings → Secrets and variables → Dependabot: PRs do Dependabot não recebem os secrets de Actions.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: "chore(deps)"
+    # Pacotes amarrados ao SDK do Expo sobem juntos, com `npx expo install --fix` ao trocar de SDK
+    # (AGENTS.md). Aqui o Dependabot só traz patch deles; minor/major ficam para a troca de SDK.
+    ignore:
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@expo/*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "jest-expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "eslint-config-expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "react-native"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "react-native-*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@react-native/*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@react-native-async-storage/*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+    groups:
+      dev-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+      runtime-patches:
+        dependency-type: production
+        update-types: [patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      actions:
+        patterns: ["*"]

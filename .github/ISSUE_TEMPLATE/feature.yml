@@ -1,0 +1,43 @@
+name: Funcionalidade
+description: Algo novo ou uma mudança de comportamento. Vira a especificação para quem implementar (pessoa ou agente).
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Objetivo
+      description: Que problema resolve e para quem.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceite
+      description: Verificáveis, um por linha. São eles que o PR e o code review vão conferir.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: rules
+    attributes:
+      label: Regras de negócio
+      description: Valores, arredondamentos, estados, casos de borda. Mudança de regra existente? Cite a seção de docs/05.
+  - type: input
+    id: figma
+    attributes:
+      label: Tela no Figma
+      description: Link ou node (ver docs/03).
+  - type: dropdown
+    id: layers
+    attributes:
+      label: Camadas afetadas
+      multiple: true
+      options: [src/domain (regra), src/data (contrato DataSource), src/features (hooks/componentes), src/app (rotas), src/components/ui (design system), docs]
+  - type: textarea
+    id: out
+    attributes:
+      label: Fora do escopo
+      description: O que esta issue não cobre, para evitar que cresça no meio do caminho.

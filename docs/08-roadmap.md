@@ -47,7 +47,8 @@ Nada de backend foi feito por enquanto. Quando for a hora:
 - [ ] Sentry / monitoramento de erros
 - [x] CI (GitHub Actions): typecheck + lint + test com cobertura mínima em PR, code review com IA como check obrigatório e hook pre-push
 - [x] Erros normalizados (`DataError` com códigos), retry só para falhas transitórias de leitura, mutations sem retry automático
-- [x] Dependabot e CodeQL configurados (`.github/`). Falta ligar o secret scanning nas configurações do repositório
+- [x] Dependabot (`.github/dependabot.yml`) e CodeQL (`.github/workflows/codeql.yml`). Alertas, correções automáticas e secret scanning: rodar `./scripts/setup-repo-security.sh` uma vez
+- [x] Templates de PR, bug e funcionalidade (`.github/`)
 - [ ] EAS Build em tags `vX.Y.Z` e `CHANGELOG.md` quando houver publicação nas lojas
 
 ## Ideias / decisões em aberto

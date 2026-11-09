@@ -23,6 +23,8 @@
       "Edit(/.github/workflows/**)",
       "Edit(/.github/scripts/**)",
       "Edit(/scripts/setup-branch-ruleset.sh)",
+      "Edit(/scripts/setup-repo-security.sh)",
+      "Edit(/.github/dependabot.yml)",
       "Edit(/.claude/skills/**)",
       "Edit(/.github/review-schema.json)",
       "Edit(/.claude/settings.json)",
