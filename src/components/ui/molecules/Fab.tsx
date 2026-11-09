@@ -2,7 +2,7 @@ import { Plus } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
 import { spacing } from '@/theme';
-import { Button } from './Button';
+import { Button } from '../atoms/Button';
 
 /** Botão flutuante "+ Criar" / "+ Nova" no canto inferior direito das listas. */
 export function Fab({ label, onPress }: { label: string; onPress: () => void }) {

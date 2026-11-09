@@ -46,6 +46,7 @@ App de divisão de despesas. Leia `README.md` e `docs/` antes de mudar algo estr
 
 - Camadas: `src/app` (rotas finas) → `src/features/*/api.ts` (React Query) → `src/domain` (regras puras, testadas) → `src/lib`. Ver `docs/01-arquitetura.md`.
 - Dinheiro é sempre inteiro em **centavos**. Regras de divisão/status em `src/domain` — altere o teste junto (`docs/05-regras-de-negocio.md`).
+- Componentes seguem `docs/12-atomic-design-e-compound.md`: nível atômico certo (`src/components/ui/{atoms,molecules,organisms,templates}`, ou `src/features/*/components` se conhecer o domínio), import só de níveis abaixo, compound (Context + `Object.assign`) quando houver estado compartilhado ou estrutura variável. Importe sempre de `@/components/ui`.
 - Estilos só via tokens de `@/theme` (extraídos do Figma) e componentes de `@/components/ui`. Mapa Figma→código em `docs/02-design-system.md`; nodes de cada tela em `docs/03-telas-e-navegacao.md`.
 - Sheets são rotas `presentation: 'formSheet'` registradas em `src/app/(app)/_layout.tsx` (sem header nativo, sem `flex: 1` com `fitToContents`).
 - Dados só via o contrato `DataSource` (`src/data/types.ts`) importando `data` de `@/data`; nunca importe `src/data/mock` fora de `src/data`. Hooks nas features, invalidação via `queryKeys`.

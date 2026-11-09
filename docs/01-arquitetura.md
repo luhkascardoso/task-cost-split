@@ -16,7 +16,7 @@
 │  src/domain/         DOMÍNIO PURO: divisão, status, resumo,   │
 │                      dinheiro. Sem React, sem rede. 100% teste│
 └──────────────────────────────────────────────────────────────┘
-  src/components/ui/  Design system (consome só src/theme)
+  src/components/ui/  Design system em níveis atômicos (consome só src/theme)
   src/theme/          Tokens do Figma
   src/lib/            QueryClient, datas
 ```
@@ -50,7 +50,12 @@ src/
 │                       ├── index.tsx                # sheet: detalhe/pagamentos
 │                       └── edit.tsx                 # sheet
 ├── components/
-│   ├── ui/                       # Button, Input, Card, Avatar, Badge, StatusSelect…
+│   ├── ui/                       # Design system (Atomic Design, ver docs/12)
+│   │   ├── atoms/                # Text, Button, Input, Card, Avatar, StatusBadge, Logo
+│   │   ├── molecules/            # AvatarGroup, EmptyState, Fab, SegmentedControl, StatusSelect
+│   │   ├── organisms/            # TabHeader
+│   │   ├── templates/            # Screen, Sheet (compound)
+│   │   └── index.ts              # Barrel único: importe sempre de @/components/ui
 │   └── form/                     # Integrações com react-hook-form
 ├── features/
 │   ├── auth/                     # sessão (zustand), login/cadastro

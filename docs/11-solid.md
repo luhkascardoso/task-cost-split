@@ -211,7 +211,7 @@ Use como roteiro. Exemplo: feature `categories`.
 4. **Cache (O):** adicione as chaves em `queryKeys`, sem alterar as existentes.
 5. **Hooks (S, D, I):** crie `src/features/categories/api.ts` com um hook por operação (`useCategories`, `useSaveCategory`…). Os hooks pedem só os parâmetros que usam, e cada mutation declara o que invalida (atualize a tabela em [01](01-arquitetura.md#cache-e-invalidação)).
 6. **Validação (S):** crie um schema Zod em `src/features/categories/schemas.ts`.
-7. **Componentes (S, I, O):** crie-os em `src/features/categories/components/`, um por tarefa de UI. Use mapas tipados para variações e passe props mínimas. Se for genérico e visual, ele vai para `src/components/ui/` e não pode conhecer a feature.
+7. **Componentes (S, I, O):** escolha o nível atômico e avalie o compound conforme [12](12-atomic-design-e-compound.md). Crie-os em `src/features/categories/components/`, um por tarefa de UI. Use mapas tipados para variações e passe props mínimas. Se for genérico e visual, ele vai para `src/components/ui/` e não pode conhecer a feature.
 8. **Rotas (S, D):** crie arquivos finos em `src/app/` que compõem hooks e componentes. Nada de `data.*`, cálculo ou regra.
 9. **Integração entre features:** importe de outra feature só `api.ts`/`hooks.ts`, nunca seus componentes internos.
 

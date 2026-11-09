@@ -48,25 +48,31 @@ O line-height é 1.5 no Figma. No RN ele vira valor absoluto (ex.: 14 → 21).
 
 ## Mapa Figma → componentes
 
-| Componente no Figma | Código | Notas |
-|---|---|---|
-| Logo + App Name | `ui/Logo` | ⚠️ Ícone placeholder (lucide `Zap`). Exporte o SVG do node `5108:760`. |
-| Button (verde) | `ui/Button variant="primary"` | `icon` opcional ("+ Criar") |
-| Button (cinza) | `ui/Button variant="secondary"` | "Criar conta", "Editar" |
-| Button (lixeira) | `ui/Button variant="danger" icon={Trash2}` | Sem label → círculo 48×48 |
-| Botão "+ Criar/Nova" flutuante | `ui/Fab` | |
-| Input | `ui/Input` (+ `form/FormInput`) | Props `icon`, `prefix` ("R$"), `error` |
-| Card | `ui/Card` | Com `onPress` vira `Pressable` |
-| Avatar / People | `ui/Avatar`, `ui/AvatarGroup` | Iniciais calculadas do nome |
-| Badge | `ui/StatusBadge` | Pago, Pendente ou Parcial |
-| Status Select | `ui/StatusSelect` | Segmented "Pendente \| Pago" |
-| Estado vazio (ícone + texto) | `ui/EmptyState` | |
-| Logo + Título + Subtítulo | `ui/TabHeader` | Cabeçalho das 3 abas |
-| Bottom navigation | `Tabs` em `(tabs)/_layout.tsx` | |
-| Overflow (sheet) | Rota `formSheet` + `ui/Sheet` | Ver [03](03-telas-e-navegacao.md) |
-| Card de atividade | `features/activities/components/ActivityCard` | |
-| Card de despesa | `features/expenses/components/ExpenseCard` | |
-| Card / Participante (Resumo) | `features/summary/components/AmountCard`, `CountCard` | |
+Níveis e padrões de construção em [12 · Atomic Design e Compound](12-atomic-design-e-compound.md). Importe sempre de `@/components/ui`.
+
+| Componente no Figma | Código | Nível | Notas |
+|---|---|---|---|
+| Logo + App Name | `ui/atoms/Logo` | Átomo | ⚠️ Ícone placeholder (lucide `Zap`). Exporte o SVG do node `5108:760`. |
+| Button (verde) | `ui/atoms/Button variant="primary"` | Átomo | `icon` opcional ("+ Criar") |
+| Button (cinza) | `ui/atoms/Button variant="secondary"` | Átomo | "Criar conta", "Editar" |
+| Button (lixeira) | `ui/atoms/Button variant="danger" icon={Trash2}` | Átomo | Sem label → círculo 48×48 |
+| Input | `ui/atoms/Input` (+ `form/FormInput`, molécula) | Átomo | Props `icon`, `prefix` ("R$"), `error` |
+| Card | `ui/atoms/Card` | Átomo | Com `onPress` vira `Pressable` |
+| Avatar | `ui/atoms/Avatar` | Átomo | Iniciais calculadas do nome |
+| Badge | `ui/atoms/StatusBadge` | Átomo | Pago, Pendente ou Parcial |
+| People (avatares sobrepostos) | `ui/molecules/AvatarGroup` | Molécula | |
+| Botão "+ Criar/Nova" flutuante | `ui/molecules/Fab` | Molécula | |
+| Estado vazio (ícone + texto) | `ui/molecules/EmptyState` | Molécula | |
+| Segmented control | `ui/molecules/SegmentedControl` | Molécula · **compound** | `SegmentedControl.Option` |
+| Status Select | `ui/molecules/StatusSelect` | Molécula | Especialização do `SegmentedControl`: "Pendente \| Pago" |
+| Logo + Título + Subtítulo | `ui/organisms/TabHeader` | Organismo | Cabeçalho das 3 abas |
+| Tela cheia | `ui/templates/Screen` | Template | Safe area + gutter |
+| Overflow (sheet) | Rota `formSheet` + `ui/templates/Sheet` | Template · **compound** | `Sheet.Header`, `.Title`, `.Close`, `.Footer`. Ver [03](03-telas-e-navegacao.md) |
+| Bottom navigation | `Tabs` em `(tabs)/_layout.tsx` | — | |
+| Card de atividade | `features/activities/components/ActivityCard` | Organismo | |
+| Card de despesa | `features/expenses/components/ExpenseCard` | Organismo | |
+| Seletor de participantes | `features/expenses/components/ParticipantPicker` | Organismo | |
+| Card / Participante (Resumo) | `features/summary/components/AmountCard`, `CountCard` | Organismo | |
 
 ## Como inspecionar o Figma durante o desenvolvimento
 
