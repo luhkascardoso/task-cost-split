@@ -1,0 +1,55 @@
+# Code review automático com a skill .claude/skills/code-review.
+# Roda em todo PR (exceto rascunho e fork) e comenta inline + um resumo com veredito.
+#
+# Pré-requisito (uma vez): em Settings → Secrets and variables → Actions, crie UM destes:
+#   CLAUDE_CODE_OAUTH_TOKEN → assinatura Claude Pro/Max (gere com `claude setup-token`)
+#   ANTHROPIC_API_KEY       → chave da API (console.anthropic.com)
+#
+# Segurança: em PRs a action usa a pasta .claude/ da branch base (main), então um PR
+# não consegue alterar a skill que vai revisá-lo. Mudanças na skill valem após o merge.
+name: Code review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+    paths:
+      - "src/**"
+      - "app.json"
+      - "package.json"
+      - "plugins/**"
+      - ".maestro/**"
+
+concurrency:
+  group: code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Rascunhos não são revisados; forks não recebem os secrets.
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Review com Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Os hooks do projeto (lint/tsc/jest) são para quem edita código; aqui só se lê.
+          settings: '{"disableAllHooks": true}'
+          prompt: |
+            Use a skill code-review no modo CI.
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+          claude_args: |
+            --allowedTools "Skill,Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(git diff:*),Bash(git log:*),Bash(grep:*)"
