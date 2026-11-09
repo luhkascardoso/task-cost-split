@@ -25,7 +25,8 @@
       "Edit(/.claude/hooks/**)",
       "Bash(npx eas-cli* submit *)",
       "Bash(npx eas-cli* update *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Edit(/.githooks/**)"
     ],
     "deny": [
       "Edit(/ios/**)",
@@ -33,7 +34,11 @@
       "Read(.env*.local)",
       "Edit(.env*.local)",
       "Bash(git push --force *)",
-      "Bash(git push -f *)"
+      "Bash(git push -f *)",
+      "Bash(git push --no-verify*)",
+      "Bash(git push * --no-verify*)",
+      "Bash(git -c core.hooksPath*)",
+      "Bash(git config core.hooksPath*)"
     ]
   },
   "hooks": {

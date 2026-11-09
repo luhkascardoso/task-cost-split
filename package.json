@@ -54,7 +54,8 @@
     "e2e:smoke": "maestro test --include-tags=smoke .maestro",
     "e2e:report": "maestro test --format html-detailed --output build/maestro-report.html .maestro",
     "e2e:prepare-ios": "bash scripts/disable-ios-password-autofill.sh",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "private": true,
   "jest": {
