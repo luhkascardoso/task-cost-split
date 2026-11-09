@@ -47,7 +47,8 @@ const SECTIONS = [
 function table(findings) {
   if (!findings.length) return 'Nenhum problema encontrado.';
   const rows = findings.map((f, i) =>
-    `| ${i + 1} | ${fileLink(f)} | ${lines(f)} | **${cell(f.title)}** — ${cell(f.problem)} | ${cell(f.criterion)} |`);
+    `| ${i + 1} | ${fileLink(f)} | ${lines(f)} | **${cell(f.title)}** — ${cell(f.problem)}${
+      f.possible_false_positive ? '<br>_❔ Marcado como possível falso positivo: crítico bloqueia mesmo assim._' : ''} | ${cell(f.criterion)} |`);
   return ['| # | Arquivo | Linha(s) | Problema | Critério |', '|---|---|---|---|---|', ...rows].join('\n');
 }
 
@@ -62,12 +63,15 @@ function render() {
   }
 
   const findings = Array.isArray(review.findings) ? review.findings : [];
-  const confirmed = findings.filter((f) => !f.possible_false_positive);
-  const doubtful = findings.filter((f) => f.possible_false_positive);
+  // Mesma regra do review-verdict.sh, para o comentário nunca divergir do check:
+  // crítico conta SEMPRE (mesmo duvidoso); os demais duvidosos vão para a seção de dúvida.
+  const counts = (f) => !f.possible_false_positive || f.severity === 'critico';
+  const confirmed = findings.filter(counts);
+  const doubtful = findings.filter((f) => !counts(f));
   const by = (key) => confirmed.filter((f) => f.severity === key);
   const count = Object.fromEntries(SECTIONS.map((s) => [s.key, by(s.key).length]));
   const blocking = count.critico + count.alto;
-  const approved = blocking === 0 && review.verdict !== 'request_changes';
+  const approved = blocking === 0 && review.verdict !== 'request_changes' && !(Number(review.blocking) > 0);
   const status = approved ? 'APROVADO' : 'REPROVADO';
 
   const out = [MARKER, `## ${approved ? '✅' : '⛔'} Code Review — ${status}`, '', '### 🔍 Análise — Claude Code', '',
