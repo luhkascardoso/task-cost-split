@@ -49,6 +49,7 @@ Nada de backend foi feito por enquanto. Quando for a hora:
 - [x] Erros normalizados (`DataError` com códigos), retry só para falhas transitórias de leitura, mutations sem retry automático
 - [x] Dependabot (`.github/dependabot.yml`) e CodeQL (`.github/workflows/codeql.yml`). Alertas, correções automáticas e secret scanning: rodar `./scripts/setup-repo-security.sh` uma vez
 - [x] Templates de PR, bug e funcionalidade (`.github/`)
+- [ ] Board no Linear com agentes ([14](14-board-linear-e-agentes.md)): docs prontos; falta o workflow `agent-issue.yml`, o `.mcp.json` e as permissões do MCP
 - [ ] EAS Build em tags `vX.Y.Z` e `CHANGELOG.md` quando houver publicação nas lojas
 
 ## Ideias / decisões em aberto
