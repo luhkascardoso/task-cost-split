@@ -1,36 +1,52 @@
 #!/usr/bin/env bash
-# Decide se o code review roda e sobre qual diff. Escreve run/mode/base/reason em $GITHUB_OUTPUT.
-# Entradas (env): EVENT, PR_NUMBER, IS_FORK, BASE_SHA, HEAD_SHA, BRANCH, DEFAULT_BRANCH
+# Decide se o code review roda e prepara o diff para o revisor em $CTX_DIR.
+# Saídas em $GITHUB_OUTPUT: run, mode (pr|push), base, head, files, reason.
+# Entradas (env): EVENT, PR_NUMBER, IS_FORK, PR_BASE_SHA, PR_HEAD_SHA, BEFORE_SHA, SHA,
+#                 BRANCH, DEFAULT_BRANCH, CTX_DIR
 set -euo pipefail
 
 out() { echo "$1=$2" >> "${GITHUB_OUTPUT:-/dev/stdout}"; }
 skip() { out run false; out reason "$1"; echo "Sem review: $1"; exit 0; }
 
-# Código do app e os próprios gates (CI, hooks, skill). Só docs e assets ficam de fora.
-RELEVANT='^(src/|plugins/|\.maestro/|\.github/|\.claude/|\.githooks/|app\.json$|package\.json$|package-lock\.json$|tsconfig\.json$|eslint\.config\.js$)'
+# Fica de fora só o que não muda comportamento nem gate: docs, markdown, assets e licença.
+# Qualquer outro arquivo (código, configs de build/teste, lockfiles, scripts, CI) é revisado.
+IGNORED='^(docs/|assets/)|\.md$|^LICENSE$'
+
+CTX_DIR=${CTX_DIR:-.review-ctx}
+mkdir -p "$CTX_DIR"
 
 if [ "$EVENT" = "pull_request" ]; then
   if [ "${IS_FORK:-false}" = "true" ]; then
     echo "::error::PR de fork não recebe os secrets, então não pode ser revisado automaticamente. Revise manualmente e faça o merge como admin." >&2
     exit 1
   fi
-  out mode pr
-  files=$(gh pr diff "$PR_NUMBER" --name-only)
+  mode=pr
+  # Diff pelo git (e não pela API): sem o limite de 300 arquivos do `gh pr diff`.
+  base=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
+  head=$PR_HEAD_SHA
 else
   open=$(gh pr list --head "$BRANCH" --state open --json number --jq 'map(.number) | join(",")')
   [ -n "$open" ] && skip "a branch tem PR aberto (#$open); o review roda nele"
-  out mode push
+  mode=push
+  head=$SHA
   zero=0000000000000000000000000000000000000000
-  if [ -z "${BASE_SHA:-}" ] || [ "$BASE_SHA" = "$zero" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-    BASE_SHA=$(git merge-base "origin/$DEFAULT_BRANCH" "$HEAD_SHA")
+  base=${BEFORE_SHA:-}
+  if [ -z "$base" ] || [ "$base" = "$zero" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+    base=$(git merge-base "origin/$DEFAULT_BRANCH" "$head")
   fi
-  out base "$BASE_SHA"
-  files=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
 fi
 
-relevant=$(printf '%s\n' "$files" | grep -E "$RELEVANT" || true)
-[ -z "$relevant" ] && skip "nenhuma mudança de código ou de gates (só docs/assets)"
+out mode "$mode"
+out base "$base"
+out head "$head"
 
-echo "Arquivos para revisar:"; printf '  %s\n' $relevant
+git diff --name-only "$base" "$head" > "$CTX_DIR/files.txt"
+relevant=$(grep -Ev "$IGNORED" "$CTX_DIR/files.txt" || true)
+[ -z "$relevant" ] && skip "nenhuma mudança de código ou de configuração (só docs/assets)"
+
+git diff --find-renames "$base" "$head" > "$CTX_DIR/diff.patch"
+count=$(wc -l < "$CTX_DIR/files.txt" | tr -d ' ')
+echo "Arquivos para revisar ($count):"; sed 's/^/  /' "$CTX_DIR/files.txt"
+out files "$count"
 out run true
-out reason "$(printf '%s\n' "$relevant" | wc -l | tr -d ' ') arquivo(s) de código alterado(s)"
+out reason "$count arquivo(s) alterado(s)"

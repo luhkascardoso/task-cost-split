@@ -1,14 +1,14 @@
 # Code review com a skill .claude/skills/code-review. O job "review" é um CHECK OBRIGATÓRIO:
-# falha quando o veredito é ⛔ (request_changes) ou há achado 🔴 bloqueante.
+# reprova com achado 🚨 crítico ou ⚠️ alto (ou veredito request_changes).
 #
-#  - PR para QUALQUER branch: revisa o diff do PR, comenta inline e publica um resumo.
-#  - Push em QUALQUER branch sem PR aberto: revisa os commits novos; o resultado fica no
-#    resumo do job (Actions → run → Summary) e no status do commit.
-#  - Sem mudança de código ou de gates (só docs/assets): passa sem chamar o revisor.
+#  - PR para QUALQUER branch: comentário único no PR (atualizado a cada push) com veredito,
+#    achados por severidade, checklist e decisão final, além de comentários nas linhas.
+#  - Push em QUALQUER branch sem PR aberto: o mesmo relatório no resumo da execução.
+#  - Só docs/markdown/assets: passa sem chamar o revisor.
 #
+# Segurança: em PR, os scripts que DECIDEM o check (escopo, schema, veredito) vêm da branch
+# base, e a action usa a .claude/ da base; o PR não consegue trocá-los para se aprovar.
 # Pré-requisito: secret CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token`) ou ANTHROPIC_API_KEY.
-# Sem ele o check falha de propósito (fail closed).
-# Bloqueio de merge: scripts/setup-branch-ruleset.sh.
 name: Code review
 
 on:
@@ -34,10 +34,35 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    env:
+      CTX_DIR: .review-ctx
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Gate da branch base
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: .gate-base
+          sparse-checkout: |
+            .github/scripts
+            .github/review-schema.json
+          sparse-checkout-cone-mode: false
+
+      - name: Origem do gate
+        id: gate
+        run: |
+          if [ -f .gate-base/.github/scripts/review-verdict.sh ] && [ -f .gate-base/.github/review-schema.json ]; then
+            dir=.gate-base
+          else
+            dir=.
+            [ "$GITHUB_EVENT_NAME" = "pull_request" ] && echo "::warning::A branch base ainda não tem os scripts do gate; usando os do PR (só no PR que os instala)."
+          fi
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "schema=$(jq -c . "$dir/.github/review-schema.json")" >> "$GITHUB_OUTPUT"
 
       - name: Escopo do review
         id: scope
@@ -46,11 +71,13 @@ jobs:
           EVENT: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           IS_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
-          BASE_SHA: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
           BRANCH: ${{ github.ref_name }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-        run: bash .github/scripts/review-scope.sh
+        run: bash "${{ steps.gate.outputs.dir }}/.github/scripts/review-scope.sh"
 
       - name: Review com Claude
         id: review
@@ -60,7 +87,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # Token do próprio job (permissões acima). Sem ele a action troca um token com o app do
-          # Claude, que pula a execução quando o PR altera este workflow e deixaria o check sem veredito.
+          # Claude, que pula a execução quando o PR altera este workflow.
           github_token: ${{ github.token }}
           # Os hooks do projeto (lint/tsc/jest) são para quem edita código; aqui só se lê.
           settings: '{"disableAllHooks": true}'
@@ -68,31 +95,48 @@ jobs:
             Use a skill code-review no modo ${{ steps.scope.outputs.mode == 'pr' && 'CI' || 'push' }}.
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
-            BRANCH: ${{ github.head_ref || github.ref_name }}
             BASE SHA: ${{ steps.scope.outputs.base }}
-            HEAD SHA: ${{ github.sha }}
+            HEAD SHA: ${{ steps.scope.outputs.head }}
+            DIFF: ${{ env.CTX_DIR }}/diff.patch
+            ARQUIVOS ALTERADOS: ${{ env.CTX_DIR }}/files.txt
+            O diff já está pronto nesses arquivos: leia-os com Read. O relatório e o comentário de
+            resumo no PR são gerados a partir da sua saída estruturada; não poste comentário de resumo.
           claude_args: |
-            --allowedTools "Skill,Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(grep:*)"
-            --json-schema '{"type":"object","additionalProperties":false,"required":["verdict","blocking","important","suggestions","summary_markdown"],"properties":{"verdict":{"type":"string","enum":["approve","approve_with_changes","request_changes"]},"blocking":{"type":"integer","minimum":0},"important":{"type":"integer","minimum":0},"suggestions":{"type":"integer","minimum":0},"summary_markdown":{"type":"string"}}}'
+            --allowedTools "Skill,Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*)"
+            --json-schema '${{ steps.gate.outputs.schema }}'
 
-      # A action esconde o texto das mensagens no log. Se o review falhar, mostra só o motivo
-      # final (ex.: credencial inválida), sem despejar a conversa inteira.
+      # A action esconde o texto das mensagens no log. Se o review falhar, mostra só o motivo final.
       - name: Motivo da falha do review
         if: failure() && steps.review.outputs.execution_file != ''
         env:
           EXEC_FILE: ${{ steps.review.outputs.execution_file }}
         run: |
-          jq -r '[.[] | select(.type == "result")] | last
-                 | "is_error=\(.is_error) subtype=\(.subtype) turns=\(.num_turns)\nMotivo: \(.result // (.errors // [] | join("; ")) // "sem texto")"' "$EXEC_FILE" \
-            | tee -a "$GITHUB_STEP_SUMMARY"
-          echo "::error::$(jq -r '[.[] | select(.type == "result")] | last | .result // "review falhou sem motivo registrado"' "$EXEC_FILE" | head -c 300)"
+          reason=$(jq -r '([.[] | select(.type == "result")] | last) as $r
+            | if $r == null then "a execução não registrou resultado"
+              else ($r.result // ((($r.errors // []) | join("; ")) | if . == "" then null else . end) // "sem texto") end' "$EXEC_FILE")
+          echo "Motivo: $reason" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "::error::$(printf '%s' "$reason" | head -c 300)"
+
+      - name: Publicar resultado
+        if: ${{ !cancelled() && steps.scope.outputs.run == 'true' }}
+        env:
+          OUT: ${{ steps.review.outputs.structured_output }}
+          MODE: ${{ steps.scope.outputs.mode }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ steps.scope.outputs.head }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EXEC_FILE: ${{ steps.review.outputs.execution_file }}
+          FILES_FILE: ${{ env.CTX_DIR }}/files.txt
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/review-comment.mjs
 
       - name: Veredito
-        if: steps.scope.outputs.run == 'true'
+        if: ${{ !cancelled() && steps.scope.outputs.run == 'true' }}
         env:
           OUT: ${{ steps.review.outputs.structured_output }}
           SKIPPED: ${{ steps.review.outputs.skipped_due_to_workflow_validation_mismatch }}
-        run: bash .github/scripts/review-verdict.sh
+        run: bash "${{ steps.gate.outputs.dir }}/.github/scripts/review-verdict.sh"
 
       - name: Sem review necessário
         if: steps.scope.outputs.run != 'true'

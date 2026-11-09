@@ -53,7 +53,7 @@ body=$(cat <<JSON
 JSON
 )
 
-id=$(gh api "repos/$repo/rulesets" --jq ".[] | select(.name == \"$NAME\") | .id" | head -1)
+id=$(gh api --paginate "repos/$repo/rulesets" --jq ".[] | select(.name == \"$NAME\") | .id" | head -1)
 if [ -n "$id" ]; then
   printf '%s' "$body" | gh api -X PUT "repos/$repo/rulesets/$id" --input - >/dev/null
   echo "Ruleset \"$NAME\" atualizado (#$id) em $repo."
