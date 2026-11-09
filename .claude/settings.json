@@ -17,7 +17,20 @@
       "Bash(npx tsc --noEmit)",
       "Bash(git status)",
       "Bash(git diff *)",
-      "Bash(git log *)"
+      "Bash(git log *)",
+      "mcp__linear__list_issues",
+      "mcp__linear__list_my_issues",
+      "mcp__linear__get_issue",
+      "mcp__linear__list_comments",
+      "mcp__linear__list_issue_statuses",
+      "mcp__linear__get_issue_status",
+      "mcp__linear__list_issue_labels",
+      "mcp__linear__list_teams",
+      "mcp__linear__list_projects",
+      "mcp__linear__get_project",
+      "mcp__linear__list_cycles",
+      "mcp__linear__list_documents",
+      "mcp__linear__get_document"
     ],
     "ask": [
       "Edit(/.github/workflows/**)",
@@ -25,6 +38,7 @@
       "Edit(/scripts/setup-branch-ruleset.sh)",
       "Edit(/scripts/setup-repo-security.sh)",
       "Edit(/.github/dependabot.yml)",
+      "Edit(/.mcp.json)",
       "Edit(/.claude/skills/**)",
       "Edit(/.github/review-schema.json)",
       "Edit(/.claude/settings.json)",
@@ -32,7 +46,12 @@
       "Bash(npx eas-cli* submit *)",
       "Bash(npx eas-cli* update *)",
       "Bash(git push *)",
-      "Edit(/.githooks/**)"
+      "Edit(/.githooks/**)",
+      "mcp__linear__create_issue",
+      "mcp__linear__update_issue",
+      "mcp__linear__create_comment",
+      "mcp__linear__create_project",
+      "mcp__linear__update_project"
     ],
     "deny": [
       "Edit(/ios/**)",
