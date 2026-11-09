@@ -9,7 +9,8 @@ Você é o revisor deste repositório. O objetivo é pegar o que **typecheck, li
 
 ## 1. Descubra o modo e o escopo
 
-- **Modo CI**: o pedido menciona um número de PR e o repositório (vem da GitHub Action). Escopo = `gh pr diff <número>`. Contexto do PR: `gh pr view <número>`.
+- **Modo CI**: o pedido diz "modo CI" e traz um número de PR (vem da GitHub Action). Escopo = `gh pr diff <número>`. Contexto do PR: `gh pr view <número>`.
+- **Modo push**: o pedido diz "modo push" e traz BASE SHA e HEAD SHA, sem PR (push numa branch sem PR aberto). Escopo = `git diff <BASE SHA> <HEAD SHA>`; mensagens com `git log <BASE SHA>..<HEAD SHA>`.
 - **Modo local**: qualquer outro caso. Escopo = o que mudou em relação à `main`: `git diff main...HEAD` mais as mudanças não commitadas (`git diff HEAD`). Se o usuário apontar arquivos ou um commit, use isso.
 
 Sem mudanças no escopo → diga isso em uma linha e pare.
@@ -68,6 +69,10 @@ Sem mudanças no escopo → diga isso em uma linha e pare.
 - Dado sensível em `AsyncStorage` (tokens vão para `expo-secure-store` quando houver backend).
 - Erro engolido (`catch` vazio), promessa sem tratamento, estado de loading ou erro faltando em tela que busca dados.
 
+### Gates de qualidade (`.github/`, `.claude/`, `.githooks/`, `package.json`, `tsconfig.json`, `eslint.config.js`)
+- Mudança que **enfraquece um gate** → bloqueante, salvo se o PR explica e justifica: remover ou pular passo do CI, baixar `coverageThreshold`, afrouxar `strict`/regras de lint, `--no-verify`, `continue-on-error`, desligar hooks, liberar permissões no `.claude/settings.json`, fazer `review-verdict.sh` ou o workflow de review aprovar sem veredito, ou tirar caminhos do escopo em `review-scope.sh`.
+- Mudança na própria skill de review: confira que as regras continuam batendo com os docs.
+
 ### Docs
 - Mudou algo que um doc descreve (regra, contrato, tabela de componentes, rotas)? O doc foi atualizado no mesmo PR?
 
@@ -107,6 +112,17 @@ Cada achado: **onde** (arquivo:linha), **o quê**, **por quê** (cite a regra ou
 ```
 
 Veredito: ⛔ se houver algum 🔴; ⚠️ se houver 🟡; ✅ caso contrário. Sem achados → só o resumo com ✅.
+
+### Modo push
+Não há PR: **não comente no GitHub**. Tudo vai na saída estruturada (abaixo); o `summary_markdown` leva a lista completa de achados agrupada por severidade, com `arquivo:linha`, o quê, por quê e como corrigir.
+
+### Saída estruturada (modos CI e push)
+O job do GitHub pede um JSON no fim. Ele **decide o check obrigatório**: `request_changes` ou `blocking > 0` reprova e bloqueia o merge. Preencha com os mesmos números do resumo:
+- `verdict`: `approve` (✅), `approve_with_changes` (⚠️) ou `request_changes` (⛔), pela regra acima.
+- `blocking`, `important`, `suggestions`: contagem de 🔴, 🟡 e 🔵.
+- `summary_markdown`: no modo CI, o mesmo texto do comentário de resumo; no modo push, o resumo mais todos os achados.
+
+Seja rigoroso com 🔴: ele trava o merge. Só use quando houver bug, regra violada ou risco concreto que você confirmou no código. Na dúvida entre 🔴 e 🟡, explique a dúvida e use 🟡.
 
 ### Modo local
 Responda no chat com o mesmo resumo e a lista de achados agrupada por severidade (arquivo:linha, o quê, por quê, como corrigir). **Não altere arquivos**; ofereça corrigir os achados depois.
