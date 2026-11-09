@@ -53,3 +53,4 @@ App de divisão de despesas. Leia `README.md` e `docs/` antes de mudar algo estr
 - Não há backend ainda (decisão do usuário: backend próprio, a ser feito depois — não criar servidor sem pedido). O app roda com a implementação `mock` (AsyncStorage). Ver `docs/04-camada-de-dados.md`.
 - Siga os princípios SOLID de `docs/11-solid.md` (checklist de feature nova e de PR). Ao tocar um arquivo listado em "Débitos conhecidos", corrija o débito ou não o agrave.
 - Node >= 22.13. Antes de concluir: `npm run typecheck && npm run lint && npm test`.
+- Code review: a skill `.claude/skills/code-review` aplica estas regras. Rode `/code-review` antes de abrir PR; no GitHub ela roda em todo PR e em todo push de branch (`.github/workflows/code-review.yml`), e o veredito ⛔ reprova o check obrigatório `review` e bloqueia o merge.

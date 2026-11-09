@@ -21,6 +21,10 @@
     ],
     "ask": [
       "Edit(/.github/workflows/**)",
+      "Edit(/.github/scripts/**)",
+      "Edit(/scripts/setup-branch-ruleset.sh)",
+      "Edit(/.claude/skills/**)",
+      "Edit(/.github/review-schema.json)",
       "Edit(/.claude/settings.json)",
       "Edit(/.claude/hooks/**)",
       "Bash(npx eas-cli* submit *)",

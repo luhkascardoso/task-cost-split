@@ -1,0 +1,118 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "blocking",
+    "summary",
+    "findings",
+    "checklist"
+  ],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "approve_with_changes",
+        "request_changes"
+      ],
+      "description": "request_changes se houver achado critico (mesmo marcado como possivel falso positivo) ou alto confirmado; approve_with_changes se houver so medio, baixo ou duvidosos nao criticos; approve sem achados."
+    },
+    "blocking": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Quantidade de achados critico (inclusive os marcados como possivel falso positivo) + alto confirmado."
+    },
+    "summary": {
+      "type": "string",
+      "description": "2 a 4 frases em portugues: o que a mudanca faz e o ponto mais importante do review."
+    },
+    "findings": {
+      "type": "array",
+      "description": "Um item por problema confirmado no codigo. Vazio se nao houver problemas.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "file",
+          "line_start",
+          "line_end",
+          "title",
+          "problem",
+          "criterion",
+          "fix",
+          "possible_false_positive"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critico",
+              "alto",
+              "medio",
+              "baixo"
+            ],
+            "description": "critico: bug, dinheiro errado, seguranca ou dado perdido. alto: regra de negocio ou de arquitetura violada, contrato ou gate quebrado. medio: convencao do projeto, teste ou doc faltando. baixo: melhoria opcional."
+          },
+          "file": {
+            "type": "string",
+            "description": "Caminho relativo a raiz do repositorio."
+          },
+          "line_start": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Primeira linha no arquivo novo (0 se nao se aplica)."
+          },
+          "line_end": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Ultima linha no arquivo novo (igual a line_start se for uma so)."
+          },
+          "title": {
+            "type": "string",
+            "description": "Resumo curto do problema, ate 10 palavras."
+          },
+          "problem": {
+            "type": "string",
+            "description": "O que esta errado e o impacto, em 1 a 3 frases."
+          },
+          "criterion": {
+            "type": "string",
+            "description": "Regra ou doc violado, por exemplo docs/05 Dinheiro em centavos ou AGENTS.md Camadas."
+          },
+          "fix": {
+            "type": "string",
+            "description": "Como corrigir, em uma frase acionavel."
+          },
+          "possible_false_positive": {
+            "type": "boolean",
+            "description": "true quando nao foi possivel confirmar no codigo. Alto, medio e baixo marcados assim nao contam para o veredito; critico conta sempre. Na duvida se e critico, use alto com este campo true."
+          }
+        }
+      }
+    },
+    "checklist": {
+      "type": "array",
+      "description": "Areas verificadas e quantos achados cada uma teve.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item",
+          "problems"
+        ],
+        "properties": {
+          "item": {
+            "type": "string",
+            "description": "Area verificada, por exemplo Dinheiro em centavos e regras de negocio."
+          },
+          "problems": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}
