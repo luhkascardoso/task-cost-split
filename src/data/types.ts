@@ -117,13 +117,39 @@ export interface DataSource {
   summary: SummarySource;
 }
 
-/** Erro esperado (credencial inválida, recurso não encontrado, validação…). */
+/**
+ * Códigos de `DataError`.
+ * - `unauthorized`, `not_found`, `conflict`, `invalid`: erros de negócio/entrada. Repetir não muda o resultado.
+ * - `network`, `timeout`, `server`: falhas transitórias de infraestrutura (o adaptador HTTP as lança).
+ *   São as únicas que justificam nova tentativa automática, e só em leituras (docs/05).
+ * - `unknown`: qualquer erro não mapeado, normalizado por `toDataError` (src/data/errors.ts).
+ */
+export type DataErrorCode =
+  | 'unauthorized'
+  | 'not_found'
+  | 'conflict'
+  | 'invalid'
+  | 'network'
+  | 'timeout'
+  | 'server'
+  | 'unknown';
+
+/**
+ * Único tipo de erro que sai da camada de dados. A mensagem já vem pronta para a UI.
+ * `status` (HTTP) e `original` (erro de origem) ajudam no diagnóstico e nunca vão para a tela.
+ */
 export class DataError extends Error {
+  readonly status?: number;
+  readonly original?: unknown;
+
   constructor(
     message: string,
-    readonly code: 'unauthorized' | 'not_found' | 'conflict' | 'invalid' = 'invalid',
+    readonly code: DataErrorCode = 'invalid',
+    options: { status?: number; original?: unknown } = {},
   ) {
     super(message);
     this.name = 'DataError';
+    this.status = options.status;
+    this.original = options.original;
   }
 }

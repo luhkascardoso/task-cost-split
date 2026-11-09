@@ -5,6 +5,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { Avatar, Button, Sheet, StatusBadge, StatusSelect, Text } from '@/components/ui';
 import { formatBRL, getExpenseStatus, type Expense } from '@/domain';
 import { useParticipantNames } from '@/features/participants/hooks';
+import { errorMessage } from '@/lib/error-message';
 import { colors, spacing } from '@/theme';
 import { useDeleteExpense, useSetShareStatus } from '../api';
 
@@ -46,6 +47,11 @@ export function ExpenseDetailSheet({ expense }: { expense: Expense }) {
             </View>
           );
         })}
+        {setStatus.isError && (
+          <Text variant="textXs" tone="danger" accessibilityLiveRegion="polite">
+            {errorMessage(setStatus.error, 'Não foi possível atualizar o status. Tente de novo.')}
+          </Text>
+        )}
       </View>
 
       <Sheet.Footer>
@@ -76,7 +82,12 @@ function useConfirmDeleteExpense(expense: Pick<Expense, 'id' | 'activityId' | 't
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await remove.mutateAsync(expense.id);
+          try {
+            await remove.mutateAsync(expense.id);
+          } catch (error) {
+            Alert.alert('Não foi possível excluir', errorMessage(error));
+            return;
+          }
           router.back();
         },
       },

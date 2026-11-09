@@ -9,6 +9,7 @@ import { Button, Text } from '@/components/ui';
 import { useSignUp } from '@/features/auth/api';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { signUpSchema, type SignUpInput } from '@/features/auth/schemas';
+import { errorMessage } from '@/lib/error-message';
 import { spacing } from '@/theme';
 
 /** Figma: Acesso / Cadastro (5137:1254) */
@@ -58,7 +59,7 @@ export default function SignUpScreen() {
         />
         {signUp.error && (
           <Text variant="textXs" tone="danger">
-            {signUp.error.message}
+            {errorMessage(signUp.error)}
           </Text>
         )}
       </View>

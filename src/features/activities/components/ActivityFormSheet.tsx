@@ -8,6 +8,7 @@ import { FormInput } from '@/components/form/FormInput';
 import { Button, Sheet, Text } from '@/components/ui';
 import type { Activity } from '@/domain';
 import { formatShortDate } from '@/lib/date';
+import { errorMessage } from '@/lib/error-message';
 import { spacing } from '@/theme';
 import { useDeleteActivity, useSaveActivity } from '../api';
 import { activityFormSchema, type ActivityFormInput } from '../schemas';
@@ -27,7 +28,12 @@ export function ActivityFormSheet({ activity }: { activity?: Activity }) {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const id = await save.mutateAsync(values);
+    let id: string;
+    try {
+      id = await save.mutateAsync(values);
+    } catch {
+      return; // fica no sheet; a mensagem aparece via save.error
+    }
     if (isEdit) router.back();
     else router.replace({ pathname: '/activity/[activityId]', params: { activityId: id } });
   });
@@ -39,7 +45,12 @@ export function ActivityFormSheet({ activity }: { activity?: Activity }) {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await remove.mutateAsync(activity!.id);
+          try {
+            await remove.mutateAsync(activity!.id);
+          } catch (error) {
+            Alert.alert('Não foi possível excluir', errorMessage(error));
+            return;
+          }
           router.dismissTo('/activities');
         },
       },
@@ -71,7 +82,7 @@ export function ActivityFormSheet({ activity }: { activity?: Activity }) {
         />
       </View>
 
-      {save.error && <Text variant="textXs" tone="danger">{save.error.message}</Text>}
+      {save.error && <Text variant="textXs" tone="danger">{errorMessage(save.error)}</Text>}
 
       {isEdit ? (
         <Sheet.Footer>
