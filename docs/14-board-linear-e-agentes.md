@@ -136,7 +136,7 @@ O MCP do Linear permite buscar, criar e atualizar issues, projetos e comentário
 
 ### Regras para o agente local
 
-- **Só mexe no board quando pedido:** mover status, comentar ou criar card exige um pedido explícito. Em `.claude/settings.json`, as ferramentas de leitura do MCP do Linear (`list_*`, `get_*`) estão liberadas e as de escrita (`create_issue`, `update_issue`, `create_comment`, `create_project`, `update_project`) pedem aprovação. Ferramenta nova do Linear que não estiver na lista também pede aprovação.
+- **Só mexe no board quando pedido:** mover status, comentar ou criar card exige um pedido explícito. Em `.claude/settings.json`, as ferramentas de leitura do MCP do Linear (`list_*`, `get_*`) estão liberadas, exceto `list_comments` e `get_document`, que trazem texto de outras pessoas e pedem aprovação; as de escrita (`create_issue`, `update_issue`, `create_comment`, `create_project`, `update_project`) pedem aprovação. Ferramenta nova do Linear que não estiver na lista também pede aprovação.
 - **Não muda status que a automação controla:** depois que o PR existe, In Review e Done ficam com a integração do GitHub.
 - **Resumo no card:** ao abrir o PR, comenta na issue o que mudou e como testar (o mesmo texto do PR).
 

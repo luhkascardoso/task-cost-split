@@ -46,6 +46,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Testes dos scripts do agente
+        run: bash .github/scripts/tests/agent-scripts.test.sh
+
       # Falha se src/domain ou src/data ficarem abaixo do limite em package.json → jest.coverageThreshold
       - name: Testes + cobertura
         run: npm run test:coverage -- --ci
