@@ -36,7 +36,8 @@ Nada de backend foi feito por enquanto. Quando for a hora:
 - [ ] Skeletons no lugar do `ActivityIndicator`
 - [ ] Haptics ao marcar Pago (`expo-haptics`)
 - [ ] Teclado: `KeyboardAvoidingView` / `react-native-keyboard-controller` nos sheets
-- [ ] Acessibilidade ([checklist em 12](12-atomic-design-e-compound.md#acessibilidade)): `textMuted` (#585860) tem contraste 2,79:1 sobre `background` e 2,65:1 sobre `surface`; precisa de ≥ 4.5:1 para texto. Revisar o token com o Figma
+- [x] Acessibilidade ([checklist em 12](12-atomic-design-e-compound.md#acessibilidade)): `textMuted` passou de #585860 (2,79:1 / 2,65:1) para #7e7e86 (4,88:1 sobre `background`, 4,64:1 sobre `surface`) — LUH-5
+- [ ] Levar o tom `#7e7e86` (`gray350`) para o Figma, que ainda usa o gray-400 nos textos apagados
 
 ## Fase 3: Robustez
 

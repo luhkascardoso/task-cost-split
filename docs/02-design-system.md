@@ -12,7 +12,8 @@ Fonte: variáveis do arquivo Figma (node `3:809`). Implementação: `src/theme/t
 | grayscale/gray-700 | `#121216` | `colors.surface` | Bottom nav, sheets, painel de login |
 | grayscale/gray-600 | `#1c1c22` | `colors.cardBorder`, `avatar`, `buttonSecondary` | Bordas, avatar, botão secundário |
 | grayscale/gray-500 | `#2a2a2d` | `palette.gray500` | — |
-| grayscale/gray-400 | `#585860` | `colors.textMuted` | Placeholder, meta-info, abas inativas |
+| grayscale/gray-400 | `#585860` | `palette.gray400` | — (era o `textMuted`; contraste 2,79:1 insuficiente) |
+| — (só no código) | `#7e7e86` | `colors.textMuted` (`palette.gray350`) | Placeholder, meta-info, abas inativas. Contraste 4,88:1 sobre `background` e 4,64:1 sobre `surface` (LUH-5); falta levar ao Figma |
 | grayscale/gray-300 | `#92929a` | `colors.textSecondary` | Subtítulos |
 | grayscale/gray-200 | `#e1e1e6` | `palette.gray200` | — |
 | grayscale/gray-100 | `#fafafa` | `colors.textPrimary` | Texto principal |

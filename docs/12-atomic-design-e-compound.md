@@ -179,7 +179,7 @@ Requisito de todo componente, não polimento. Regras:
 | **Rótulo significativo** em todo elemento tocável | `accessibilityLabel` em botão só de ícone ("Excluir despesa", não "Botão 1"). Sem redundância: "Enviar", não "Botão Enviar, botão" | Botões de ícone já têm; conferir a cada componente novo |
 | **Papel e estado** | `accessibilityRole` (`button`, `tab`, `checkbox`…) e `accessibilityState` (`selected`, `disabled`, `busy`) | `Button` define `role="button"` |
 | **Área de toque ≥ 44×44** | `sizes.controlHeight` = 48. Ícones menores usam `hitSlop` | Botões e inputs ok |
-| **Contraste ≥ 4.5:1** (texto) e 3:1 (texto grande, ícones) | Medir o token contra `background` e `surface` antes de usar | **`textMuted` dá 2,79:1, abaixo do mínimo** (ver roadmap) |
+| **Contraste ≥ 4.5:1** (texto) e 3:1 (texto grande, ícones) | Medir o token contra `background` e `surface` antes de usar | Ok: `textMuted` (#7e7e86) dá 4,88:1 e 4,64:1; `textSecondary`, 6,36:1 e 6,05:1 |
 | **Não depender só de cor** | Status sempre com texto: `StatusBadge` usa os rótulos de `status.ts` (Pago/Pendente/Parcial) | Ok |
 | **Anunciar mudanças** | Mensagens de erro e confirmações com `accessibilityLiveRegion="polite"` (Android) ou `AccessibilityInfo.announceForAccessibility` | Erro de status no detalhe da despesa já usa |
 | **Ordem de leitura natural** | A ordem dos elementos no JSX segue a leitura visual | Conferir em sheets com rodapé |
