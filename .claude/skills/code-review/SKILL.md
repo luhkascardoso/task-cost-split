@@ -11,6 +11,7 @@ Você é o revisor deste repositório. O objetivo é pegar o que **typecheck, li
 
 - **Modo CI**: o pedido diz "modo CI" e traz um número de PR (vem da GitHub Action). O diff já vem pronto no arquivo indicado em DIFF e a lista em ARQUIVOS ALTERADOS: leia-os com Read. Título e descrição do PR: `gh pr view <número>`.
 - **Modo push**: o pedido diz "modo push", sem PR (push numa branch sem PR aberto). Mesmo esquema: diff em DIFF, lista em ARQUIVOS ALTERADOS.
+- Nos modos CI e push, a lista com status (A, M, D, R) é a fonte de verdade sobre o que mudou. No modo CI, `.claude/`, `CLAUDE.md` e `AGENTS.md` do workspace são os da branch base; as versões do PR estão na pasta indicada no pedido. **Arquivo ausente no workspace não é arquivo removido**: só aponte remoção quando a lista marcar D.
 - **Modo local**: qualquer outro caso. Escopo = o que mudou em relação à `main`: `git diff main...HEAD` mais as mudanças não commitadas (`git diff HEAD`). Se o usuário apontar arquivos ou um commit, use isso.
 
 Sem mudanças no escopo → diga isso em uma linha e pare.

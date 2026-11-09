@@ -50,6 +50,9 @@ relevant=$(grep -Ev "$IGNORED" "$CTX_DIR/files.txt" || true)
 [ -z "$relevant" ] && skip "nenhuma mudança de código ou de configuração (só docs/, assets/, README ou LICENSE)"
 
 git diff --find-renames "$base" "$head" > "$CTX_DIR/diff.patch"
+# Com status (A adicionado, M modificado, D removido, R renomeado), para o revisor não
+# confundir "ausente no workspace" com "removido pelo PR".
+git diff --find-renames --name-status "$base" "$head" > "$CTX_DIR/changes.txt"
 count=$(wc -l < "$CTX_DIR/files.txt" | tr -d ' ')
 echo "Arquivos para revisar ($count):"; sed 's/^/  /' "$CTX_DIR/files.txt"
 out files "$count"
