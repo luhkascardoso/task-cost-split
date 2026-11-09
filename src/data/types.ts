@@ -118,38 +118,8 @@ export interface DataSource {
 }
 
 /**
- * Códigos de `DataError`.
- * - `unauthorized`, `not_found`, `conflict`, `invalid`: erros de negócio/entrada. Repetir não muda o resultado.
- * - `network`, `timeout`, `server`: falhas transitórias de infraestrutura (o adaptador HTTP as lança).
- *   São as únicas que justificam nova tentativa automática, e só em leituras (docs/05).
- * - `unknown`: qualquer erro não mapeado, normalizado por `toDataError` (src/data/errors.ts).
+ * Erro do contrato: todo erro sai da camada de dados como `DataError` com `code`
+ * (docs/04-camada-de-dados.md#erros). Definido em `src/lib/errors.ts`, a base das camadas,
+ * para que `lib` (QueryClient, mensagens de UI) não dependa de `data`.
  */
-export type DataErrorCode =
-  | 'unauthorized'
-  | 'not_found'
-  | 'conflict'
-  | 'invalid'
-  | 'network'
-  | 'timeout'
-  | 'server'
-  | 'unknown';
-
-/**
- * Único tipo de erro que sai da camada de dados. A mensagem já vem pronta para a UI.
- * `status` (HTTP) e `original` (erro de origem) ajudam no diagnóstico e nunca vão para a tela.
- */
-export class DataError extends Error {
-  readonly status?: number;
-  readonly original?: unknown;
-
-  constructor(
-    message: string,
-    readonly code: DataErrorCode = 'invalid',
-    options: { status?: number; original?: unknown } = {},
-  ) {
-    super(message);
-    this.name = 'DataError';
-    this.status = options.status;
-    this.original = options.original;
-  }
-}
+export { DataError, type DataErrorCode } from '@/lib/errors';

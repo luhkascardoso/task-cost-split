@@ -1,5 +1,4 @@
-import { DEFAULT_ERROR_MESSAGES } from '@/data/errors';
-import { DataError } from '@/data/types';
+import { DataError, DEFAULT_ERROR_MESSAGES } from './errors';
 
 /**
  * Mensagem de erro para a UI. `DataError` já traz texto pronto; qualquer outro erro

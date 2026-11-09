@@ -1,5 +1,4 @@
-import { DataError } from '@/data/types';
-import { DEFAULT_ERROR_MESSAGES } from '@/data/errors';
+import { DataError, DEFAULT_ERROR_MESSAGES } from '../errors';
 
 import { errorMessage } from '../error-message';
 import { MAX_QUERY_RETRIES, queryClientDefaultOptions, shouldRetryQuery } from '../query-client';

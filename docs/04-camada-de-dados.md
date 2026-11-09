@@ -81,7 +81,7 @@ Regras:
 - **Não mascare o erro** com `throw new Error('Falha…')`: isso apaga o código e o contexto. Lance `DataError` com o código certo, ou deixe o erro subir até o ponto de normalização.
 - **Normalize num ponto só**: no adaptador, envolva as chamadas em `try/catch` e devolva `toDataError(err)` para o que não foi mapeado. `status` (HTTP) e `original` (erro de origem) ficam no `DataError` para diagnóstico e **nunca** vão para a tela.
 - **Toda falha de escrita aparece na tela.** Quem chama `mutateAsync` trata a rejeição (mensagem no formulário ou `Alert`). Update otimista que reverte mostra a mensagem do erro, não volta em silêncio.
-- A política de retry está em `src/lib/query-client.ts` (`shouldRetryQuery`) e a lista do que é recuperável, em `src/data/errors.ts` (`isRecoverableError`).
+- A política de retry está em `src/lib/query-client.ts` (`shouldRetryQuery`) e o tipo `DataError`, a lista do que é recuperável (`isRecoverableError`) e a normalização (`toDataError`), em `src/lib/errors.ts`. A camada de dados os reexporta (`@/data`), então quem implementa `DataSource` importa de lá.
 
 ## Modelo de dados (lógico)
 

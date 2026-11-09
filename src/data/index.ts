@@ -4,7 +4,7 @@ import { createMockDataSource } from './mock/mock-data-source';
 import type { DataSource } from './types';
 
 export * from './types';
-export * from './errors';
+export { DEFAULT_ERROR_MESSAGES, isRecoverableError, toDataError } from '@/lib/errors';
 
 /**
  * PONTO ÚNICO DE TROCA da fonte de dados (EXPO_PUBLIC_DATA_SOURCE).

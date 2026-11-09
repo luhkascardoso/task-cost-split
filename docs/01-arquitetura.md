@@ -18,7 +18,7 @@
 └──────────────────────────────────────────────────────────────┘
   src/components/ui/  Design system em níveis atômicos (consome só src/theme)
   src/theme/          Tokens do Figma
-  src/lib/            QueryClient, datas
+  src/lib/            QueryClient, erros (DataError), datas. Base: não importa nenhuma camada
 ```
 
 **Regra de dependência:** as setas só apontam para baixo. `domain/` não importa nada do app. `components/ui/` não conhece features. As features podem importar umas das outras só via `api.ts`/`hooks.ts`, nunca componentes internos. **Nenhum arquivo fora de `src/data/` conhece uma implementação concreta de dados.**
@@ -79,7 +79,7 @@ src/
 │   ├── index.ts                  # Escolhe a implementação (EXPO_PUBLIC_DATA_SOURCE)
 │   └── mock/                     # Implementação local (AsyncStorage)
 ├── domain/                       # Regras de negócio puras + testes
-├── lib/                          # query-client, date
+├── lib/                          # query-client, errors, error-message, date
 └── theme/                        # tokens.ts
 ```
 

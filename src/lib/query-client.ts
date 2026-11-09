@@ -1,6 +1,6 @@
 import { QueryClient, type DefaultOptions } from '@tanstack/react-query';
 
-import { isRecoverableError } from '@/data/errors';
+import { isRecoverableError } from './errors';
 
 /** Tentativas extras de uma leitura que falhou por motivo transitório. */
 export const MAX_QUERY_RETRIES = 2;
