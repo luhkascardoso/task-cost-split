@@ -6,6 +6,7 @@ import { ScrollView, View } from 'react-native';
 import { FormInput } from '@/components/form/FormInput';
 import { Button, Input, Sheet, Text } from '@/components/ui';
 import { maskBRLInput, type Expense } from '@/domain';
+import { errorMessage } from '@/lib/error-message';
 import { spacing } from '@/theme';
 import { useSaveExpense } from '../api';
 import { expenseFormSchema, type ExpenseFormInput } from '../schemas';
@@ -31,7 +32,11 @@ export function ExpenseFormSheet({ activityId, expense }: { activityId: string; 
     setValue('participantIds', ids, { shouldValidate: true });
 
   const onSubmit = handleSubmit(async (values) => {
-    await save.mutateAsync(values);
+    try {
+      await save.mutateAsync(values);
+    } catch {
+      return; // fica no sheet; a mensagem aparece via save.error
+    }
     router.back();
   });
 
@@ -74,7 +79,7 @@ export function ExpenseFormSheet({ activityId, expense }: { activityId: string; 
           />
         </View>
 
-        {save.error && <Text variant="textXs" tone="danger">{save.error.message}</Text>}
+        {save.error && <Text variant="textXs" tone="danger">{errorMessage(save.error)}</Text>}
         <Button label="Salvar" block onPress={() => onSubmit()} loading={save.isPending} />
       </Sheet>
     </ScrollView>

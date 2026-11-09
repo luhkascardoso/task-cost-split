@@ -18,10 +18,21 @@
 └──────────────────────────────────────────────────────────────┘
   src/components/ui/  Design system em níveis atômicos (consome só src/theme)
   src/theme/          Tokens do Figma
-  src/lib/            QueryClient, datas
+  src/lib/            QueryClient, erros (DataError), datas. Base: não importa nenhuma camada
 ```
 
 **Regra de dependência:** as setas só apontam para baixo. `domain/` não importa nada do app. `components/ui/` não conhece features. As features podem importar umas das outras só via `api.ts`/`hooks.ts`, nunca componentes internos. **Nenhum arquivo fora de `src/data/` conhece uma implementação concreta de dados.**
+
+## Princípios de engenharia
+
+Critérios para desempatar decisões de projeto e de code review:
+
+1. **Resiliência:** o app não quebra quando os dados vêm errados ou a rede cai. Erro vira mensagem amigável ([04 · Erros](04-camada-de-dados.md#erros)), não tela branca.
+2. **Clareza de estado:** o usuário nunca fica em dúvida se uma operação concluiu. Nada de toque duplicado nem de falha silenciosa ([05 · Dinheiro e duplicidade](05-regras-de-negocio.md#dinheiro-e-duplicidade)).
+3. **O aparelho não é cofre:** guardar localmente só o necessário. Token de sessão vai para `expo-secure-store`, nunca para o AsyncStorage, e nada sensível vai para log.
+4. **Regras de negócio num lugar só:** em `src/domain` hoje, no backend quando ele existir. A UI não recalcula dinheiro.
+5. **Cliente no centro:** acessibilidade é requisito, não polimento ([12 · Acessibilidade](12-atomic-design-e-compound.md#acessibilidade)).
+6. **IA validada por gente:** código, testes e reviews gerados por IA passam por revisão humana ([13 · IA no desenvolvimento](13-ia-no-desenvolvimento.md)).
 
 ## Estrutura de pastas
 
@@ -68,7 +79,7 @@ src/
 │   ├── index.ts                  # Escolhe a implementação (EXPO_PUBLIC_DATA_SOURCE)
 │   └── mock/                     # Implementação local (AsyncStorage)
 ├── domain/                       # Regras de negócio puras + testes
-├── lib/                          # query-client, date
+├── lib/                          # query-client, errors, error-message, date
 └── theme/                        # tokens.ts
 ```
 
@@ -120,3 +131,12 @@ As chaves ficam centralizadas em `src/lib/query-client.ts` (`queryKeys`). Toda m
 | salvar/excluir atividade | `activities`, `summary`, `participants` |
 | salvar/excluir despesa, mudar status | `expenses(activity)`, `expenses`, `activities`, `summary`, `participants` |
 | criar participante | `participants` |
+
+### Regras de cache
+
+- **Query ou mutation se escolhe pelo efeito**, não pelo verbo HTTP: leitura repetível e segura para refazer é query; o que cria, altera ou remove estado é mutation.
+- **A chave identifica os dados.** Todo parâmetro que muda o resultado entra na `queryKey` (ex.: `activityId` em `expenses.byActivity`). Se faltar, duas telas diferentes leem a mesma entrada de cache. Use sempre as fábricas de `queryKeys`, com valores estáveis e serializáveis.
+- **Nada sensível na chave:** senha, token ou dado pessoal nunca entram em `queryKey`.
+- **`staleTime` ≠ `gcTime`:** `staleTime` (30 s aqui) diz por quanto tempo o dado é considerado fresco; `gcTime` (padrão de 5 min) diz por quanto tempo uma query sem uso fica em memória. O cache é só em memória; ele **não** é persistido.
+- **Trocar de usuário limpa o cache:** `signOut()` chama `queryClient.clear()`, então o próximo login não vê dados do anterior.
+- **Retry:** queries repetem só falhas transitórias; mutations nunca (ver [04 · Erros](04-camada-de-dados.md#erros)).

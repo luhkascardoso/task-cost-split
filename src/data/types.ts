@@ -117,13 +117,9 @@ export interface DataSource {
   summary: SummarySource;
 }
 
-/** Erro esperado (credencial inválida, recurso não encontrado, validação…). */
-export class DataError extends Error {
-  constructor(
-    message: string,
-    readonly code: 'unauthorized' | 'not_found' | 'conflict' | 'invalid' = 'invalid',
-  ) {
-    super(message);
-    this.name = 'DataError';
-  }
-}
+/**
+ * Erro do contrato: todo erro sai da camada de dados como `DataError` com `code`
+ * (docs/04-camada-de-dados.md#erros). Definido em `src/lib/errors.ts`, a base das camadas,
+ * para que `lib` (QueryClient, mensagens de UI) não dependa de `data`.
+ */
+export { DataError, type DataErrorCode } from '@/lib/errors';

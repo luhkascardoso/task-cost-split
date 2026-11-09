@@ -76,3 +76,14 @@ A checagem de que os participantes pertencem ao usuário é de persistência e f
 ## Aba Participantes
 
 Lista os participantes (exceto "eu") que estão em **pelo menos uma** atividade, com "Em N atividades". Quem foi criado e depois removido de todas as despesas some da lista, mas continua no banco.
+
+## Dinheiro e duplicidade
+
+Operações que gravam valores (criar/editar/excluir despesa, marcar cota como paga, criar/excluir atividade) seguem regras próprias, porque uma repetição vira dinheiro errado.
+
+1. **Nunca repetir escrita automaticamente.** Mutations têm `retry: false` (padrão do `QueryClient` em `src/lib/query-client.ts`). Nova tentativa só quando o **usuário** pede.
+2. **Bloquear o segundo toque.** O botão que dispara a operação fica desabilitado enquanto ela está em andamento (`loading={mutation.isPending}` no `Button` já bloqueia o toque).
+3. **O usuário nunca fica em dúvida se concluiu.** Sucesso fecha o sheet ou atualiza a tela; falha mostra mensagem. Update otimista (status Pago/Pendente) que falha volta ao estado anterior **e** avisa.
+4. **Leitura pode repetir, escrita não.** Só falhas transitórias (`network`, `timeout`, `server`) de leitura são repetidas, até 2 vezes. Erro de negócio (`invalid`, `conflict`, `not_found`, `unauthorized`) nunca, porque repetir não muda o resultado.
+5. **Quando houver backend: idempotência.** Cada criação envia um identificador gerado no app (ex.: UUID). O backend ignora um segundo pedido com o mesmo id e devolve o resultado do primeiro. Isso cobre o caso em que a operação foi gravada mas a resposta se perdeu (rede caiu) e o usuário tenta de novo.
+6. **Totais são sempre recalculados a partir das cotas** (ver [Resumo](#resumo-summaryts)), nunca somados de forma incremental no cliente.

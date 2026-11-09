@@ -9,6 +9,7 @@ import { Button, Text } from '@/components/ui';
 import { useSignIn } from '@/features/auth/api';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { signInSchema, type SignInInput } from '@/features/auth/schemas';
+import { errorMessage } from '@/lib/error-message';
 import { spacing } from '@/theme';
 
 /** Figma: Acesso / Login (5135:879) */
@@ -50,7 +51,7 @@ export default function SignInScreen() {
         />
         {signIn.error && (
           <Text variant="textXs" tone="danger">
-            {signIn.error.message}
+            {errorMessage(signIn.error)}
           </Text>
         )}
       </View>

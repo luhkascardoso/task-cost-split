@@ -1,0 +1,86 @@
+name: Bug
+description: Algo não funciona como deveria no app
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bug que não pode ser reproduzido quase sempre vira bug não resolvido. Descreva **o que aconteceu** (fato), não o que você supõe.
+        Não cole senhas, tokens nem dados pessoais de outras pessoas.
+  - type: textarea
+    id: what
+    attributes:
+      label: O que aconteceu
+      description: Comportamento observado e mensagens exibidas.
+      placeholder: Ao marcar a cota da Ana como Paga, o status volta para Pendente sem mensagem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que era esperado
+      placeholder: A cota fica como Paga e o total pendente da atividade diminui.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passo a passo para reproduzir
+      description: "Uma ação por passo, a partir do app aberto. Se não acontece sempre, diga a frequência (ex.: 2 de 5 tentativas)."
+      value: |
+        1. Abrir o app e entrar com uma conta
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Sistema
+      options: [iOS, Android]
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: Versão do sistema
+      placeholder: iOS 18.4 / Android 15
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Aparelho (fabricante e modelo)
+      description: Modelo completo, não só a marca. Para simulador, diga qual.
+      placeholder: iPhone 15 / Samsung Galaxy S23 / Simulador iPhone 16
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Versão do app
+      description: Versão e build (ou o commit/branch, se for build de desenvolvimento).
+      placeholder: 1.0.0 (12) / main @ 1a2b3c4
+    validations:
+      required: true
+  - type: input
+    id: when
+    attributes:
+      label: Data e hora (com fuso)
+      description: Ajuda a cruzar com logs e monitoramento.
+      placeholder: 09/11/2026 às 14:20 (America/Sao_Paulo, UTC-3)
+    validations:
+      required: true
+  - type: dropdown
+    id: data-source
+    attributes:
+      label: Fonte de dados
+      options: [mock (local), http (backend)]
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Prints, vídeo e informações extras
+      description: Tipo de rede (Wi‑Fi / 4G), prints com contexto, gravação de tela.
