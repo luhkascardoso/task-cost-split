@@ -75,6 +75,18 @@ jobs:
             --allowedTools "Skill,Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(grep:*)"
             --json-schema '{"type":"object","additionalProperties":false,"required":["verdict","blocking","important","suggestions","summary_markdown"],"properties":{"verdict":{"type":"string","enum":["approve","approve_with_changes","request_changes"]},"blocking":{"type":"integer","minimum":0},"important":{"type":"integer","minimum":0},"suggestions":{"type":"integer","minimum":0},"summary_markdown":{"type":"string"}}}'
 
+      # A action esconde o texto das mensagens no log. Se o review falhar, mostra só o motivo
+      # final (ex.: credencial inválida), sem despejar a conversa inteira.
+      - name: Motivo da falha do review
+        if: failure() && steps.review.outputs.execution_file != ''
+        env:
+          EXEC_FILE: ${{ steps.review.outputs.execution_file }}
+        run: |
+          jq -r '[.[] | select(.type == "result")] | last
+                 | "is_error=\(.is_error) subtype=\(.subtype) turns=\(.num_turns)\nMotivo: \(.result // (.errors // [] | join("; ")) // "sem texto")"' "$EXEC_FILE" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "::error::$(jq -r '[.[] | select(.type == "result")] | last | .result // "review falhou sem motivo registrado"' "$EXEC_FILE" | head -c 300)"
+
       - name: Veredito
         if: steps.scope.outputs.run == 'true'
         env:
