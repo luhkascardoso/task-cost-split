@@ -6,8 +6,10 @@
 #  - Push em QUALQUER branch sem PR aberto: o mesmo relatório no resumo da execução.
 #  - Só docs/markdown/assets: passa sem chamar o revisor.
 #
-# Segurança: em PR, os scripts que DECIDEM o check (escopo, schema, veredito) vêm da branch
-# base, e a action usa a .claude/ da base; o PR não consegue trocá-los para se aprovar.
+# Segurança: em PR, tudo que decide ou publica o resultado vem da branch BASE, e não do PR:
+#   - scripts do gate (escopo, schema, veredito, comentário);
+#   - instruções do revisor (.claude/, CLAUDE.md, AGENTS.md, .mcp.json), restauradas antes
+#     de o Claude rodar. As mudanças do PR nesses arquivos chegam ao revisor só pelo diff.
 # Pré-requisito: secret CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token`) ou ANTHROPIC_API_KEY.
 name: Code review
 
@@ -55,11 +57,11 @@ jobs:
       - name: Origem do gate
         id: gate
         run: |
-          if [ -f .gate-base/.github/scripts/review-verdict.sh ] && [ -f .gate-base/.github/review-schema.json ]; then
-            dir=.gate-base
-          else
-            dir=.
-            [ "$GITHUB_EVENT_NAME" = "pull_request" ] && echo "::warning::A branch base ainda não tem os scripts do gate; usando os do PR (só no PR que os instala)."
+          gate_files=".github/scripts/review-scope.sh .github/scripts/review-verdict.sh .github/scripts/review-comment.mjs .github/review-schema.json"
+          dir=.gate-base
+          for f in $gate_files; do [ -f ".gate-base/$f" ] || dir=.; done
+          if [ "$dir" = . ] && [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            echo "::warning::A branch base ainda não tem todos os scripts do gate; usando os do PR (só no PR que os instala)."
           fi
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
           echo "schema=$(jq -c . "$dir/.github/review-schema.json")" >> "$GITHUB_OUTPUT"
@@ -78,6 +80,23 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: bash "${{ steps.gate.outputs.dir }}/.github/scripts/review-scope.sh"
+
+      # A action restaura .claude/ e CLAUDE.md da base, mas não o AGENTS.md, que o CLAUDE.md
+      # importa. Restauramos todos aqui; o diff do PR já foi salvo em $CTX_DIR pelo escopo.
+      - name: Instruções do revisor da branch base
+        if: steps.scope.outputs.run == 'true' && steps.scope.outputs.mode == 'pr'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          for path in .claude CLAUDE.md CLAUDE.local.md AGENTS.md .mcp.json; do
+            rm -rf "$path"
+            if git cat-file -e "$BASE:$path" 2>/dev/null; then
+              git checkout "$BASE" -- "$path"
+              echo "$path ← base"
+            else
+              echo "$path: não existe na base (removido do workspace do revisor)"
+            fi
+          done
 
       - name: Review com Claude
         id: review
@@ -99,7 +118,9 @@ jobs:
             HEAD SHA: ${{ steps.scope.outputs.head }}
             DIFF: ${{ env.CTX_DIR }}/diff.patch
             ARQUIVOS ALTERADOS: ${{ env.CTX_DIR }}/files.txt
-            O diff já está pronto nesses arquivos: leia-os com Read. O relatório e o comentário de
+            O diff já está pronto nesses arquivos: leia-os com Read. As instruções de agente
+            (.claude/, CLAUDE.md, AGENTS.md) no workspace são as da branch base; o que o PR muda nelas
+            está só no diff e deve ser revisado como mudança de gate. O relatório e o comentário de
             resumo no PR são gerados a partir da sua saída estruturada; não poste comentário de resumo.
           claude_args: |
             --allowedTools "Skill,Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*)"
@@ -129,7 +150,7 @@ jobs:
           EXEC_FILE: ${{ steps.review.outputs.execution_file }}
           FILES_FILE: ${{ env.CTX_DIR }}/files.txt
           GITHUB_TOKEN: ${{ github.token }}
-        run: node .github/scripts/review-comment.mjs
+        run: node "${{ steps.gate.outputs.dir }}/.github/scripts/review-comment.mjs"
 
       - name: Veredito
         if: ${{ !cancelled() && steps.scope.outputs.run == 'true' }}

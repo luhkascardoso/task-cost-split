@@ -8,9 +8,10 @@ set -euo pipefail
 out() { echo "$1=$2" >> "${GITHUB_OUTPUT:-/dev/stdout}"; }
 skip() { out run false; out reason "$1"; echo "Sem review: $1"; exit 0; }
 
-# Fica de fora só o que não muda comportamento nem gate: docs, markdown, assets e licença.
-# Qualquer outro arquivo (código, configs de build/teste, lockfiles, scripts, CI) é revisado.
-IGNORED='^(docs/|assets/)|\.md$|^LICENSE$'
+# Fica de fora só o que não muda comportamento nem gate: docs/, assets/, README e licença.
+# Qualquer outro arquivo é revisado, inclusive markdown que instrui agentes
+# (AGENTS.md, CLAUDE.md, .claude/**/SKILL.md) e código, configs, lockfiles, scripts e CI.
+IGNORED='^(docs/|assets/)|^README\.md$|^LICENSE$'
 
 CTX_DIR=${CTX_DIR:-.review-ctx}
 mkdir -p "$CTX_DIR"
@@ -42,7 +43,7 @@ out head "$head"
 
 git diff --name-only "$base" "$head" > "$CTX_DIR/files.txt"
 relevant=$(grep -Ev "$IGNORED" "$CTX_DIR/files.txt" || true)
-[ -z "$relevant" ] && skip "nenhuma mudança de código ou de configuração (só docs/assets)"
+[ -z "$relevant" ] && skip "nenhuma mudança de código ou de configuração (só docs/, assets/, README ou LICENSE)"
 
 git diff --find-renames "$base" "$head" > "$CTX_DIR/diff.patch"
 count=$(wc -l < "$CTX_DIR/files.txt" | tr -d ' ')
