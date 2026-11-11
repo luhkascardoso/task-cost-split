@@ -39,6 +39,7 @@
       "Edit(/.mcp.json)",
       "Edit(/.claude/skills/**)",
       "Edit(/.github/review-schema.json)",
+      "Edit(/.github/triage-schema.json)",
       "Edit(/.claude/settings.json)",
       "Edit(/.claude/hooks/**)",
       "Bash(npx eas-cli* submit *)",

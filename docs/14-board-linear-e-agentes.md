@@ -2,12 +2,13 @@
 
 O board do projeto é o **Linear** (workspace `luhkas27`, time **LUH**). Código, CI e code review continuam no **GitHub**. Este doc define como os dois se conversam e como agentes de IA pegam trabalho do board:
 
+- **Triagem:** toda issue nova recebe um comentário do agente de triagem (tipo, prioridade, o que falta, duplicadas, reprodução do bug). Ele só sugere; uma pessoa decide.
 - **Passo 2 · Agente na nuvem:** uma issue com a label `agente` no Linear vira um PR aberto por um agente no GitHub, sem ninguém rodar nada na máquina.
 - **Passo 3 · Claude Code local:** no seu computador, o Claude Code lê e atualiza o board pelo MCP oficial do Linear ("pega o próximo card de Todo").
 
 Nos dois casos o PR passa pelos mesmos gates: CI (`checks`), code review (`review`) e o merge feito por uma pessoa ([13 · IA no desenvolvimento](13-ia-no-desenvolvimento.md)).
 
-> **Situação:** implementado (`.github/workflows/agent-issue.yml`, `.github/scripts/agent-*.sh`, `.mcp.json`, permissões em `.claude/settings.json`). Falta a configuração única em [Ativar](#ativar) e confirmar no primeiro uso os itens de [O que validar](#o-que-validar-na-implementação).
+> **Situação:** implementado (`.github/workflows/agent-issue.yml`, `.github/workflows/issue-triage.yml`, `.github/scripts/agent-*.sh`, `.github/scripts/triage-*`, `.mcp.json`, permissões em `.claude/settings.json`). Falta a configuração única em [Ativar](#ativar) e confirmar no primeiro uso os itens de [O que validar](#o-que-validar-na-implementação).
 
 ## Visão geral
 
@@ -38,7 +39,8 @@ Uma vez, nesta ordem:
 2. **App do Claude no GitHub** instalado no repositório (no Claude Code: `/install-github-app`). Sem ele o PR do agente não dispara CI nem review.
 3. **Variável do repositório** `AGENT_ALLOWED_SENDERS` (Settings → Secrets and variables → Actions → Variables): logins que podem acionar o agente, separados por vírgula, com o bot do Linear. Exemplo: `luhkascardoso,linear[bot]`. Sem a variável, só o dono do repositório aciona. `*` é recusado.
 4. Opcional: variável `LINEAR_TEAM_KEY` se o time mudar de `LUH`.
-5. **Teste:** crie no Linear uma issue pequena com critérios de aceite claros, aplique `agente` e acompanhe em Actions → "Agente (issues)". O primeiro uso confirma os itens de [O que validar](#o-que-validar-na-implementação).
+5. **Triagem:** nada a configurar além do secret do review. Se a issue espelho do Linear for aberta por um bot (ver [O que validar](#o-que-validar-na-implementação)), liste-o na variável `TRIAGE_ALLOWED_AUTHORS` (padrão: a mesma lista de `AGENT_ALLOWED_SENDERS`). Fontes futuras, como Sentry e o feedback do app, entram na mesma lista.
+6. **Teste:** crie no Linear uma issue pequena com critérios de aceite claros, aplique `agente` e acompanhe em Actions → "Agente (issues)". O primeiro uso confirma os itens de [O que validar](#o-que-validar-na-implementação).
 
 Para o passo 3, basta abrir o Claude Code no projeto, aprovar o servidor `linear` do `.mcp.json` e rodar `/mcp` para entrar no Linear.
 
@@ -68,6 +70,40 @@ O status padrão do Linear é Backlog → Todo → In Progress → In Review →
 | Quem faz o merge | **Sempre uma pessoa** | Check verde não é aprovação ([13](13-ia-no-desenvolvimento.md)) |
 
 Palavras mágicas aceitas pelo Linear: para fechar, `fixes`, `closes`, `resolves`, `completes`, `implements` (e variações); para só referenciar, `part of`, `refs`, `contributes to`; para só relacionar, `related to`. `Ignore LUH-12` impede a ligação.
+
+## Triagem
+
+Toda issue nova passa por uma triagem antes de virar trabalho. O agente **prepara**; uma pessoa **decide**.
+
+### Fluxo
+
+1. Uma issue é aberta no GitHub, ou criada no Linear e sincronizada (vira issue no GitHub). Sentry e o feedback do app (cards LUH-15 e LUH-16) também vão abrir issues e passar por aqui.
+2. O evento `issues: opened` dispara `.github/workflows/issue-triage.yml`. Para triar de novo (depois de editar a issue), use Actions → **Triagem de issues** → Run workflow, com o número da issue.
+3. O agente lê a issue, a lista das outras issues (abertas e fechadas), as labels e os docs do assunto.
+4. Se for bug em código testável, ele escreve um teste Jest em `src/__repro__/issue-<n>.test.ts` que descreve o comportamento **correto**.
+5. Um passo fixo do workflow roda esse teste e decide o resultado: falhou = **reproduzido**; passou = **não reproduzido**; não compilou = **erro**. Quem afirma a reprodução é o passo, não o agente.
+6. Outro job publica **um** comentário na issue (atualizado se a triagem rodar de novo). Com a sincronização de duas vias, o comentário aparece também no card do Linear.
+
+### O comentário
+
+| Seção | Conteúdo |
+|---|---|
+| Resumo | O pedido em 1 a 2 frases |
+| Tipo | bug, feature, chore, docs ou pergunta |
+| Prioridade | urgente, alta, média ou baixa (escala do Linear), com o motivo. Urgente só para perda de dinheiro ou de dados, ou app inutilizável |
+| Labels | Até 5. Label que ainda não existe aparece marcada como "(nova)" |
+| Pronta para `agente` | Sim só se objetivo e critérios de aceite estão claros e a mudança não mexe em CI, hooks, skills ou permissões |
+| O que falta na descrição | O que alguém precisaria perguntar para implementar |
+| Possíveis duplicadas | Só números que existem no repositório (o script descarta os inventados), com o motivo |
+| Reprodução (bugs) | Resultado do teste, o código do teste e a saída do Jest. O teste não é commitado: se a pessoa aprovar, ele vira o primeiro teste do PR |
+
+### Regras da triagem
+
+- **Só sugere.** O agente não muda status, prioridade, labels nem aplica `agente`. Aceitar a sugestão é aplicar no Linear.
+- **Quem dispara:** issue aberta por quem tem acesso ao repositório (dono, membro, colaborador) ou por um login de `TRIAGE_ALLOWED_AUTHORS`. Issue de terceiros não aciona o agente (custo e segurança).
+- **Agente só lê.** O job do agente tem token só de leitura e checkout sem credencial salva. Ferramentas: ler o código, escrever em `src/__repro__/` e rodar o Jest só ali. O teste roda num passo sem segredos.
+- **Publica quem não é o agente.** O comentário sai de outro job, com o script da branch padrão, a partir da saída estruturada (`.github/triage-schema.json`). Texto vindo da issue ou do agente é neutralizado: sem menções, HTML ou links.
+- **Falha visível:** se o agente não devolver uma triagem válida, o comentário diz que a triagem não foi concluída e o job falha.
 
 ## Passo 2 · Agente na nuvem
 
@@ -149,6 +185,7 @@ O MCP do Linear permite buscar, criar e atualizar issues, projetos e comentário
 | Token do Linear vazado | Não há token no repositório: o local usa OAuth por pessoa. Se o passo 2 precisar consultar o Linear, usa o secret `LINEAR_API_KEY` com escopo mínimo |
 | Label acionada por terceiro | Repositório público: só colaboradores aplicam label; o workflow confere o autor |
 | Custo descontrolado | `--max-turns`, timeout, uma execução por issue |
+| Issue maliciosa tenta instruir a triagem ou executar código | Triagem só para autores com acesso ou listados; token só de leitura; teste roda sem segredos; comentário publicado por script, com texto neutralizado |
 
 ## O que validar na implementação
 
@@ -158,7 +195,8 @@ Pontos que a documentação do Linear não deixa explícitos e serão confirmado
 2. **A label aplicada pela sincronização dispara `issues: labeled`.** Eventos causados por apps (como o do Linear) disparam workflows; só os do `GITHUB_TOKEN` não. Se não disparar, o plano B é o agente reagir à abertura da issue sincronizada, ou a um comentário `@claude`.
 3. **Onde o ID `LUH-<n>` aparece na issue espelho** (título, corpo ou comentário de linkback do Linear; o `agent-branch.sh` procura nos três), para montar a branch e o `Fixes LUH-<n>`. Se não aparecer, o agente usa só `Closes #<N>`: a sincronização de status fecha o card do mesmo jeito.
 4. **Mudança de status ao abrir o PR como rascunho** (gatilho "PR drafted" configurado no time).
-5. **Somente issues novas sincronizam.** Issues anteriores à sincronização precisam ser importadas ou recriadas.
+5. **Autor da issue espelho.** Ver em Actions → "Triagem de issues" → passo "Quem abriu" se a issue criada no Linear chega como da sua conta (passa direto) ou de um bot (incluir em `TRIAGE_ALLOWED_AUTHORS`).
+6. **Somente issues novas sincronizam.** Issues anteriores à sincronização precisam ser importadas ou recriadas.
 
 ## Alternativas consideradas
 
