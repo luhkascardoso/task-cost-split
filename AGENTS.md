@@ -55,7 +55,7 @@ App de divisão de despesas. Leia `README.md` e `docs/` antes de mudar algo estr
 - Acessibilidade é requisito: checklist em `docs/12-atomic-design-e-compound.md#acessibilidade`.
 - Trabalho de IA é revisado por gente: `docs/13-ia-no-desenvolvimento.md`. Tarefa grande (regra de dinheiro, contrato de dados, tela nova, mais de 3 arquivos ou label `plano`): mostre o plano com o contrato critério → evidência e só codifique depois de aprovado; o PR traz a seção "Contrato de verificação" preenchida.
 - Board no Linear (time LUH): branch com o ID (`luh-12-…`), PR com `Fixes LUH-12`; só mexa no board quando pedirem (`docs/14-board-linear-e-agentes.md`). Issue nova passa pela triagem automática (`issue-triage.yml`), que só sugere.
-- Não há backend ainda (decisão do usuário: backend próprio, a ser feito depois — não criar servidor sem pedido). O app roda com a implementação `mock` (AsyncStorage). Ver `docs/04-camada-de-dados.md`.
+- Backend (`server/`, Node + Fastify + Prisma, Postgres no Supabase): leia `docs/15-backend.md` (índice dos docs em `docs/backend/` e dos ADRs) antes de mexer. Rotas com a skill `backend-endpoint`, banco com `backend-migration`. Toda consulta filtra pelo dono (escopo do dono). Regra de dinheiro só em `src/domain`, que o servidor importa. Até a fase 4, o app roda com o `mock`.
 - Siga os princípios SOLID de `docs/11-solid.md` (checklist de feature nova e de PR). Ao tocar um arquivo listado em "Débitos conhecidos", corrija o débito ou não o agrave.
 - Node >= 22.13. Antes de concluir: `npm run typecheck && npm run lint && npm test`.
 

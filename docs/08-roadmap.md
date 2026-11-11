@@ -18,14 +18,19 @@
 - [ ] Exportar o **logo SVG** do Figma (node `5108:760`) para `ui/LogoMark.tsx` e trocar o placeholder em `ui/Logo.tsx`
 - [ ] Gerar ícone do app e splash a partir do logo
 
-## Backend próprio ⏸️ (aguardando decisão)
+## Backend próprio (Node.js) 🔜
 
-Nada de backend foi feito por enquanto. Quando for a hora:
+Desenho em [15 · Backend](15-backend.md): Node + Fastify + Prisma em `server/`, Postgres no Supabase, participante híbrido.
 
-- [ ] Definir stack do backend (linguagem, framework, banco, hospedagem)
-- [ ] Implementar o contrato de [04 · Camada de dados](04-camada-de-dados.md) (auth + recursos)
-- [ ] Criar o adaptador `src/data/http/` com tokens em `expo-secure-store`
-- [ ] Rodar a suíte de contrato (`src/test/data-source-contract.ts`) contra o adaptador HTTP
+- [x] Definir stack, banco, hospedagem e modelo de participantes ([15](15-backend.md#decisões))
+- [x] Fase 0 · Arquitetura: docs em `docs/backend/`, ADRs, skills `backend-endpoint` e `backend-migration`, regras de backend no code review
+- [ ] Fase 1 · Fundação: `server/`, Fastify, erros, `/health`, OpenAPI, Prisma, isolamento do app, job no CI
+- [ ] Fase 2 · Auth: cadastro com participante "eu", login, refresh rotativo, saída
+- [ ] Fase 3 · Recursos: atividades, despesas, status, participantes, resumo, idempotência
+- [ ] Fase 4 · Adaptador `src/data/http/` com tokens em `expo-secure-store` + suíte de contrato contra o servidor
+- [ ] Fase 5 · Deploy: Supabase (schema `app` + RLS), Render, pipeline com migrations antes do código, variáveis no EAS
+- [ ] Fase 6 (v2) · Vínculo de participantes a contas e atividades compartilhadas
+- [ ] Fase 7 (v2) · Pagador e saldo ("quem deve a quem")
 
 ## Fase 2: Polimento de UX
 
@@ -55,8 +60,8 @@ Nada de backend foi feito por enquanto. Quando for a hora:
 
 ## Ideias / decisões em aberto
 
-- **Pagador:** registrar quem pagou a conta (`expenses.paid_by`) e calcular "quem deve a quem" com algoritmo de quitação mínima.
+- **Pagador:** registrar quem pagou a conta (`expenses.paid_by`) e calcular "quem deve a quem" com algoritmo de quitação mínima. Planejado como fase 7 do backend.
 - **Divisão desigual:** por valor, porcentagem ou pesos (o domínio já isola isso em `split.ts`).
 - **Status ao editar valor:** voltar cotas pagas para pendente quando o valor da cota muda?
-- **Atividades compartilhadas** entre usuários reais (exige backend; o contrato precisaria de membros/convites).
+- **Atividades compartilhadas** entre usuários reais: planejado como fase 6 do backend (participante vinculado a uma conta, [15](backend/03-dados.md#participante-híbrido)).
 - **Offline-first:** persistir o cache do React Query (`@tanstack/query-async-storage-persister`).

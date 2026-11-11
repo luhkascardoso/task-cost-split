@@ -27,6 +27,8 @@ Sem mudanças no escopo → diga isso em uma linha e pare.
   - `docs/12-atomic-design-e-compound.md` → `src/components/**`, `src/features/*/components/**`
   - `docs/02-design-system.md` e `docs/03-telas-e-navegacao.md` → estilos e telas
   - `docs/10-e2e-maestro.md` → testIDs e `.maestro/**`
+  - `docs/15-backend.md` e `docs/backend/` → `server/**`
+- **Backend:** o diff toca `server/**`? Leia [backend.md](backend.md) (nesta pasta) e aplique todas as regras dele, além das da seção 3.
 - Só aponte um problema depois de confirmar no código. Se depender de algo que você não viu, abra o arquivo e confira; na dúvida, não comente.
 
 ## 3. O que verificar
@@ -125,7 +127,7 @@ A action pede uma **saída estruturada** (JSON). O workflow monta com ela o come
   - `blocking`: número de críticos (inclusive duvidosos) + altos confirmados. O check recalcula esse número a partir dos achados; se divergir, reprova.
   - `summary`: 2 a 4 frases sobre o que a mudança faz e o ponto principal do review.
   - `findings`: um item por achado, com `severity` (`critico`, `alto`, `medio`, `baixo`), `file`, `line_start`, `line_end`, `title`, `problem`, `criterion`, `fix` e `possible_false_positive`.
-  - `checklist`: as áreas da seção 3 que você verificou (ex.: "Dinheiro e regras de negócio", "Camadas e dependências", "Contrato DataSource", "React Query", "Componentes e estilo", "Expo e plataforma", "Segurança", "Gates de qualidade", "Testes", "Contrato de verificação", "Docs"), cada uma com quantos achados teve.
+  - `checklist`: as áreas da seção 3 que você verificou (ex.: "Dinheiro e regras de negócio", "Camadas e dependências", "Contrato DataSource", "React Query", "Componentes e estilo", "Expo e plataforma", "Segurança", "Gates de qualidade", "Testes", "Contrato de verificação", "Backend", "Docs"), cada uma com quantos achados teve.
 
 ### Modo local
 Responda no chat no mesmo formato do comentário do PR:
