@@ -98,6 +98,8 @@ check "comment: label inexistente marcada"     "sim" "$(has '`dinheiro` (nova)')
 check "comment: código não fecha a cerca"      "não" "$(printf '%s\n' "$body" | grep -qx '~~~~' && [ "$(printf '%s\n' "$body" | grep -cx '~~~~')" -gt 4 ] && echo sim || echo não)"
 check "comment: reprodução"                    "sim" "$(has '✅ **Reproduzido:**')"
 check "comment: saída válida rc=0"             "rc=0" "$(printf '%s' "$body" | tail -n1)"
+bs="$(t '{"summary":"x \\`codigo","type":"chore","priority":"baixa","priority_reason":"","missing":[],"labels":[],"duplicates":[],"reproduction_notes":"","ready_for_agent":false}')"
+check "comment: barra invertida não anula escape" "sim" "$(case "$bs" in *'x \\\`codigo'*) echo sim;; *) echo não;; esac)"
 check "comment: saída inválida falha"          "simrc=1" "$(b2="$(t '{"type":"x"}')"; case "$b2" in *'não concluída'*) printf sim;; esac; printf '%s' "$b2" | tail -n1)"
 
 echo; echo "$pass passaram, $fail falharam"

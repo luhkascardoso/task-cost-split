@@ -51,6 +51,7 @@ const shortSha = (env.HEAD_SHA || '').slice(0, 7);
 // sem menções (@ notifica pessoas), sem HTML e sem links/imagens markdown.
 const ZW = '\u200b';
 const neutralize = (text) => String(text ?? '')
+  .replace(/\\/g, '\\\\')                        // primeiro: \ não pode anular os escapes abaixo
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/`/g, '\\`')                           // sem code spans abertos pelo modelo
   .replace(/@/g, `@${ZW}`)                        // sem menções
@@ -60,7 +61,7 @@ const neutralize = (text) => String(text ?? '')
 // Célula de tabela markdown: neutralizada, sem quebra de linha e com | escapado.
 const cell = (text) => neutralize(text).replace(/\|/g, '\\|').replace(/\r?\n+/g, '<br>').trim();
 // Caminho de arquivo em code span e em URL.
-const code = (path) => `\`${String(path ?? '').replace(/`/g, "'")}\``;
+const code = (path) => `\`${String(path ?? '').replace(/[`\\]/g, "'")}\``;
 const urlPath = (path) => String(path ?? '').split('/').map(encodeURIComponent).join('/');
 const lines = (f) => (!f.line_start ? '—' : f.line_end && f.line_end !== f.line_start ? `L${f.line_start}-L${f.line_end}` : `L${f.line_start}`);
 const fileLink = (f) => {

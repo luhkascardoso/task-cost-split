@@ -55,6 +55,7 @@ function validate(raw) {
 // sem menções, sem HTML, sem links/imagens e sem #123 virando referência.
 const ZW = '​';
 const neutralize = (text) => String(text ?? '')
+  .replace(/\\/g, '\\\\')                        // primeiro: \ não pode anular os escapes abaixo
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/`/g, '\\`')
   .replace(/@/g, `@${ZW}`)
@@ -62,7 +63,7 @@ const neutralize = (text) => String(text ?? '')
   .replace(/:\/\//g, `:${ZW}//`).replace(/www\./gi, (m) => `${m.slice(0, 3)}${ZW}.`)
   .replace(/\[/g, '\\[').replace(/\]/g, '\\]');
 const inline = (text) => neutralize(text).replace(/\|/g, '\\|').replace(/\r?\n+/g, ' ').trim();
-const label = (name) => `\`${name.replace(/`/g, "'")}\`${labels.has(name) ? '' : ' (nova)'}`;
+const label = (name) => `\`${name.replace(/[`\\]/g, "'")}\`${labels.has(name) ? '' : ' (nova)'}`;
 // Bloco de código: nada de markdown é interpretado dentro; só não pode fechar a cerca.
 const fenced = (text, lang = '') => ['~~~~' + lang, String(text ?? '').replace(/~{3,}/g, (m) => m.split('').join(ZW)), '~~~~'].join('\n');
 
@@ -99,7 +100,7 @@ function render(triage, invalidReason) {
       out.push(REPRO[repro.status], '');
       if (triage.reproductionNotes) out.push(inline(triage.reproductionNotes), '');
       out.push(`<details><summary>Teste e saída</summary>`, '',
-        `Arquivo gerado na execução (não commitado): \`${String(repro.file).replace(/`/g, "'")}\``, '',
+        `Arquivo gerado na execução (não commitado): \`${String(repro.file).replace(/[`\\]/g, "'")}\``, '',
         fenced(repro.code, 'ts'), '', 'Saída do Jest:', '', fenced(repro.output), '', '</details>', '');
     } else {
       out.push(`— **Sem teste de reprodução.** ${inline(triage.reproductionNotes) || 'O agente não escreveu um teste.'}`, '');
