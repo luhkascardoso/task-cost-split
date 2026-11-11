@@ -104,6 +104,9 @@ O que é **derivado** (não precisa ser armazenado):
 
 ## Plugando o backend (quando for a hora)
 
+O lado do servidor (rotas, erros, tokens, idempotência) está em [15 · Backend](15-backend.md) e [`docs/backend/`](backend/). Os passos abaixo são os do app (fase 4).
+
+
 1. Criar `src/data/http/http-data-source.ts` exportando `createHttpDataSource(deps): DataSource`. As dependências (URL base, armazenamento de token, `fetch`) entram por parâmetro, como no mock (ver [11 · SOLID](11-solid.md#d--inversão-de-dependência)).
 2. Guardar os tokens com **`expo-secure-store`** (não AsyncStorage) e enviar `Authorization: Bearer <accessToken>`.
 3. Converter erros em `DataError`: sem conexão → `network`, timeout → `timeout`, 5xx → `server`, 401 → `unauthorized`, 404 → `not_found`, 409 → `conflict`, outros 4xx → `invalid`, guardando o `status`. O resto passa por `toDataError`.

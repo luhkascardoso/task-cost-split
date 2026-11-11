@@ -23,11 +23,12 @@
 Desenho em [15 · Backend](15-backend.md): Node + Fastify + Prisma em `server/`, Postgres no Supabase, participante híbrido.
 
 - [x] Definir stack, banco, hospedagem e modelo de participantes ([15](15-backend.md#decisões))
-- [ ] Fase 1 · Fundação: `server/`, Fastify, erros, `/health`, OpenAPI, Prisma, job no CI
+- [x] Fase 0 · Arquitetura: docs em `docs/backend/`, ADRs, skills `backend-endpoint` e `backend-migration`, regras de backend no code review
+- [ ] Fase 1 · Fundação: `server/`, Fastify, erros, `/health`, OpenAPI, Prisma, isolamento do app, job no CI
 - [ ] Fase 2 · Auth: cadastro com participante "eu", login, refresh rotativo, saída
 - [ ] Fase 3 · Recursos: atividades, despesas, status, participantes, resumo, idempotência
 - [ ] Fase 4 · Adaptador `src/data/http/` com tokens em `expo-secure-store` + suíte de contrato contra o servidor
-- [ ] Fase 5 · Deploy: Supabase (schema `app` + RLS), Render, variáveis no EAS
+- [ ] Fase 5 · Deploy: Supabase (schema `app` + RLS), Render, pipeline com migrations antes do código, variáveis no EAS
 - [ ] Fase 6 (v2) · Vínculo de participantes a contas e atividades compartilhadas
 - [ ] Fase 7 (v2) · Pagador e saldo ("quem deve a quem")
 
@@ -62,5 +63,5 @@ Desenho em [15 · Backend](15-backend.md): Node + Fastify + Prisma em `server/`,
 - **Pagador:** registrar quem pagou a conta (`expenses.paid_by`) e calcular "quem deve a quem" com algoritmo de quitação mínima. Planejado como fase 7 do backend.
 - **Divisão desigual:** por valor, porcentagem ou pesos (o domínio já isola isso em `split.ts`).
 - **Status ao editar valor:** voltar cotas pagas para pendente quando o valor da cota muda?
-- **Atividades compartilhadas** entre usuários reais: planejado como fase 6 do backend (participante vinculado a uma conta, [15](15-backend.md#participante-híbrido)).
+- **Atividades compartilhadas** entre usuários reais: planejado como fase 6 do backend (participante vinculado a uma conta, [15](backend/03-dados.md#participante-híbrido)).
 - **Offline-first:** persistir o cache do React Query (`@tanstack/query-async-storage-persister`).
