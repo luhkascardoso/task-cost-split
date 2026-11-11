@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Testes dos scripts dos agentes (agent-guard, agent-branch, agent-outcome, triage-repro, triage-comment).
+# Testes dos scripts dos agentes (agent-guard, agent-branch, agent-outcome, agent-plan, triage-repro, triage-comment).
 # Roda sem rede: `gh` e `npx` são substituídos por stubs. Uso: bash .github/scripts/tests/agent-scripts.test.sh
 set -uo pipefail
 
@@ -54,8 +54,38 @@ check "outcome: diz que abriu mas não existe"  "rc=1 comentou-falha removeu-lab
 check "outcome: bloqueado"                     "rc=1 comentou-falha removeu-label " \
   "$(o '{"status":"bloqueado","pr_url":"","resumo":"","motivo":"faltam critérios"}' '' success)"
 check "outcome: execução falhou sem saída"     "rc=1 comentou-falha removeu-label " "$(o '' '' failure)"
+check "outcome: plano publicado aguarda"     "rc=0 " \
+  "$(PLAN_URL=https://x o '{"status":"plano","pr_url":"","resumo":"r","motivo":"","plano":{}}' '' success)"
+check "outcome: plano não publicado falha"     "rc=1 comentou-falha removeu-label " \
+  "$(o '{"status":"plano","pr_url":"","resumo":"r","motivo":"","plano":{}}' '' success)"
 check "outcome: PR existe mas bloqueado"       "rc=1 comentou-falha removeu-label " \
   "$(o '{"status":"bloqueado","pr_url":"","resumo":"","motivo":"testes falham"}' https://github.com/o/r/pull/9 success)"
+
+# ---------- agent-plan.mjs
+pl() { OUT="$1" RUN_URL=u ISSUE_NUMBER=7 DRY_RUN=1 node "$DIR/agent-plan.mjs" publish 2>/dev/null; echo "rc=$?"; }
+plan='{"resumo":"Dividir por peso @fulano","passos":["Regra em src/domain","Tela"],"arquivos":["src/domain/split.ts"],"criterios":[{"criterio":"Soma das cotas igual ao total","evidencia":"split.test.ts › resto vai ao primeiro","tipo":"teste"}],"riscos":[]}'
+pbody="$(pl "{\"status\":\"plano\",\"plano\":$plan}")"
+check "plano: publica tabela e JSON"           "simsimrc=0" "$(case "$pbody" in *'| 1 | Soma das cotas igual ao total |'*) printf sim;; esac; case "$pbody" in *'<!-- plan-json:'*) printf sim;; esac; printf '%s' "$pbody" | tail -n1)"
+check "plano: menção neutralizada"             "não" "$(case "$pbody" in *'@fulano'*) echo sim;; *) echo não;; esac)"
+check "plano: sem critérios é recusado"        "rc=1" "$(pl '{"status":"plano","plano":{"resumo":"","passos":["a"],"arquivos":[],"criterios":[],"riscos":[]}}' | tail -n1)"
+check "plano: critério sem evidência recusado" "rc=1" "$(pl '{"status":"plano","plano":{"resumo":"","passos":["a"],"arquivos":[],"criterios":[{"criterio":"c","evidencia":"","tipo":"teste"}],"riscos":[]}}' | tail -n1)"
+pjs() { node --input-type=module -e "import * as p from '$DIR/agent-plan.mjs'; $1"; }
+check "plano: lê o plano do comentário do bot" "Soma das cotas igual ao total" "$(PLAN="$plan" pjs '
+  const body = p.renderPlan(JSON.parse(process.env.PLAN), "u");
+  const r = p.findPlan([{ user: { type: "Bot", login: "github-actions[bot]" }, body, html_url: "h" }]);
+  console.log(r.plan.criterios[0].criterio)')"
+check "plano: ignora marcador de outra pessoa" "null" "$(PLAN="$plan" pjs '
+  const body = p.renderPlan(JSON.parse(process.env.PLAN), "u");
+  console.log(p.findPlan([{ user: { type: "User", login: "mallory" }, body, html_url: "h" }]))')"
+check "plano: decisão" "avaliar com_plano nada avaliar avaliar:true" "$(pjs '
+  const f = { plan: {}, url: "h" };
+  console.log([
+    p.decide({ labels: ["agente"], eventLabel: "agente", found: null }).mode,
+    p.decide({ labels: ["agente", "plano-aprovado"], eventLabel: "plano-aprovado", found: f }).mode,
+    p.decide({ labels: ["agente", "plano-aprovado"], eventLabel: "plano-aprovado", found: null }).mode,
+    p.decide({ labels: ["agente"], eventLabel: "agente", found: f }).mode,
+    (({ mode, forced }) => mode + ":" + forced)(p.decide({ labels: ["agente", "plano"], eventLabel: "agente", found: null })),
+  ].join(" "))')"
 
 # ---------- triage-repro.sh (npx jest simulado: escreve o relatório pedido em FAKE_JEST)
 cat > "$TMP/bin/npx" <<'STUB'

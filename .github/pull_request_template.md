@@ -22,6 +22,18 @@ Apague as seções que não se aplicam. Card do Linear: "Fixes LUH-n". Issue do 
 
 1.
 
+## Contrato de verificação
+
+<!--
+Obrigatório quando houve plano aprovado ("Plano aprovado: <link>"); recomendado em toda tarefa com critérios de aceite.
+Uma linha por critério da issue. Evidência concreta: arquivo e nome do teste, comando e resultado, print anexado.
+"ok", "feito" ou "testado" não são evidência: o code review reprova.
+-->
+
+| Critério de aceite | Evidência |
+|---|---|
+| | |
+
 ## Checklist
 
 **Qualidade**

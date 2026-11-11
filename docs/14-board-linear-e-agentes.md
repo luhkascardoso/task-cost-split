@@ -8,7 +8,7 @@ O board do projeto é o **Linear** (workspace `luhkas27`, time **LUH**). Código
 
 Nos dois casos o PR passa pelos mesmos gates: CI (`checks`), code review (`review`) e o merge feito por uma pessoa ([13 · IA no desenvolvimento](13-ia-no-desenvolvimento.md)).
 
-> **Situação:** implementado (`.github/workflows/agent-issue.yml`, `.github/workflows/issue-triage.yml`, `.github/scripts/agent-*.sh`, `.github/scripts/triage-*`, `.mcp.json`, permissões em `.claude/settings.json`). Falta a configuração única em [Ativar](#ativar) e confirmar no primeiro uso os itens de [O que validar](#o-que-validar-na-implementação).
+> **Situação:** implementado (`.github/workflows/agent-issue.yml`, `.github/workflows/issue-triage.yml`, `.github/scripts/agent-*`, `.github/scripts/triage-*`, `.mcp.json`, permissões em `.claude/settings.json`). Falta a configuração única em [Ativar](#ativar) e confirmar no primeiro uso os itens de [O que validar](#o-que-validar-na-implementação).
 
 ## Visão geral
 
@@ -37,10 +37,11 @@ Uma vez, nesta ordem:
 
 1. **Linear:** a configuração de [Pré-requisitos no Linear](#pré-requisitos-no-linear) (sincronização de duas vias, automações de status, label `agente`).
 2. **App do Claude no GitHub** instalado no repositório (no Claude Code: `/install-github-app`). Sem ele o PR do agente não dispara CI nem review.
-3. **Variável do repositório** `AGENT_ALLOWED_SENDERS` (Settings → Secrets and variables → Actions → Variables): logins que podem acionar o agente, separados por vírgula, com o bot do Linear. Exemplo: `luhkascardoso,linear[bot]`. Sem a variável, só o dono do repositório aciona. `*` é recusado.
-4. Opcional: variável `LINEAR_TEAM_KEY` se o time mudar de `LUH`.
-5. **Triagem:** nada a configurar além do secret do review. Se a issue espelho do Linear for aberta por um bot (ver [O que validar](#o-que-validar-na-implementação)), liste-o na variável `TRIAGE_ALLOWED_AUTHORS` (padrão: a mesma lista de `AGENT_ALLOWED_SENDERS`). Fontes futuras, como Sentry e o feedback do app, entram na mesma lista.
-6. **Teste:** crie no Linear uma issue pequena com critérios de aceite claros, aplique `agente` e acompanhe em Actions → "Agente (issues)". O primeiro uso confirma os itens de [O que validar](#o-que-validar-na-implementação).
+3. **Labels no GitHub:** `plano` e `plano-aprovado` (a sincronização cria as que vierem do Linear; se não, crie em Issues → Labels).
+4. **Variável do repositório** `AGENT_ALLOWED_SENDERS` (Settings → Secrets and variables → Actions → Variables): logins que podem acionar o agente, separados por vírgula, com o bot do Linear. Exemplo: `luhkascardoso,linear[bot]`. Sem a variável, só o dono do repositório aciona. `*` é recusado.
+5. Opcional: variável `LINEAR_TEAM_KEY` se o time mudar de `LUH`.
+6. **Triagem:** nada a configurar além do secret do review. Se a issue espelho do Linear for aberta por um bot (ver [O que validar](#o-que-validar-na-implementação)), liste-o na variável `TRIAGE_ALLOWED_AUTHORS` (padrão: a mesma lista de `AGENT_ALLOWED_SENDERS`). Fontes futuras, como Sentry e o feedback do app, entram na mesma lista.
+7. **Teste:** crie no Linear uma issue pequena com critérios de aceite claros, aplique `agente` e acompanhe em Actions → "Agente (issues)". O primeiro uso confirma os itens de [O que validar](#o-que-validar-na-implementação).
 
 Para o passo 3, basta abrir o Claude Code no projeto, aprovar o servidor `linear` do `.mcp.json` e rodar `/mcp` para entrar no Linear.
 
@@ -54,6 +55,7 @@ Feitos uma vez, nas configurações do time **LUH**:
 | Automação de status | Configurações do time LUH, automações de Git/PR (é por time) | PR em rascunho → **In Progress**; PR aberto → **In Review**; PR mergeado → **Done** |
 | Sincronização de GitHub Issues | Integração GitHub, opção de GitHub Issues | **Duas vias** com `task-cost-split` (só um repositório por time pode ser duas vias) |
 | Label `agente` | Labels do time LUH | Criar a label. Ela é sincronizada com a issue do GitHub e dispara o passo 2 |
+| Labels `plano` e `plano-aprovado` | Labels do time LUH | Criar as duas. `plano` força o plano antes do código; `plano-aprovado` libera a implementação ([13 · Plano](13-ia-no-desenvolvimento.md#plano-e-contrato-de-verificação)) |
 | Nome de branch | Preferências de Git do Linear ("Copy git branch name", atalho Cmd/Ctrl + Shift + .) | Manter o ID da issue no nome (padrão do Linear). É o ID que liga a branch ao card |
 
 O status padrão do Linear é Backlog → Todo → In Progress → In Review → Done (e Canceled). Se o time usar nomes em português, a tabela acima vale com os nomes equivalentes.
@@ -113,15 +115,16 @@ Toda issue nova passa por uma triagem antes de virar trabalho. O agente **prepar
 2. Você adiciona a label **`agente`** no Linear.
 3. A sincronização de duas vias leva a label para a issue espelho no GitHub.
 4. O evento `issues: labeled` dispara o workflow `.github/workflows/agent-issue.yml`, que confere quem aplicou a label (`AGENT_ALLOWED_SENDERS`), calcula a branch e roda o Claude com a mesma `claude-code-action` do review.
-5. O agente:
+5. Se a tarefa for grande ([critérios](13-ia-no-desenvolvimento.md#quando-usar)) ou tiver a label `plano`, o agente só publica um **plano com contrato de verificação** na issue e para. Você aprova com a label `plano-aprovado`, que dispara o workflow de novo (passo seguinte), ou pede mudança comentando e reaplicando `agente`.
+6. O agente:
    - lê a issue e os docs ([AGENTS.md](../AGENTS.md), 01, 04, 05, 11, 12, 13);
    - trabalha na branch `agente/luh-<n>-<resumo>`, **calculada pelo workflow** antes de o Claude rodar (`agent-branch.sh`, via `CLAUDE_BRANCH`): o agente não escolhe a branch e não commita na `main`;
    - implementa com testes, rodando `npm run check` antes de concluir (os hooks do projeto também rodam);
    - commita pela API do GitHub (`use_commit_signing`), sem `git push`;
-   - abre o PR **como rascunho** usando o template, com `Fixes LUH-<n>` e `Closes #<N>`.
+   - abre o PR **como rascunho** usando o template, com `Fixes LUH-<n>`, `Closes #<N>` e a seção **Contrato de verificação** (e `Plano aprovado: <link>` quando houve plano).
    - Depois do Claude, um passo fixo (`agent-outcome.sh`) **confere que o PR existe de verdade** e comenta o link na issue; senão, comenta o motivo e remove a label.
-6. O Linear move o card para **In Progress** (rascunho) e depois **In Review** quando você marca o PR como pronto.
-7. CI e review rodam no PR. Você lê, pede ajustes (comentando `@claude` no PR) ou faz o merge. No merge o card vai para **Done**.
+7. O Linear move o card para **In Progress** (rascunho) e depois **In Review** quando você marca o PR como pronto.
+8. CI e review rodam no PR. Você lê, pede ajustes (comentando `@claude` no PR) ou faz o merge. No merge o card vai para **Done**.
 
 ### Requisitos técnicos
 
@@ -137,6 +140,7 @@ Toda issue nova passa por uma triagem antes de virar trabalho. O agente **prepar
 - **Quem pode acionar:** o workflow confere `github.event.sender` contra `AGENT_ALLOWED_SENDERS` e ignora o resto. Bots só entram se listados (repassados à action em `allowed_bots`).
 - **Escopo do agente:** ferramentas limitadas a ler e editar o código, rodar `npm`, `npx expo install` e `npx tsc`, consultar o git, ler a issue, commitar pela API e abrir PR. As regras `ask`/`deny` de `.claude/settings.json` valem na nuvem, onde `ask` equivale a negado: o agente não mexe em CI, hooks, skill, `.mcp.json`, `ios/`, `android/` nem `.env`, e não faz `git push`.
 - **Nunca faz merge** e nunca força push. O PR sai como rascunho.
+- **Plano antes do código:** a aprovação é a label `plano-aprovado`, conferida contra `AGENT_ALLOWED_SENDERS` como a label `agente`. Só vale o plano publicado pelo próprio workflow (comentário do `github-actions[bot]`), e plano novo remove a aprovação antiga.
 - **Limites de custo:** `--max-turns` e `timeout-minutes` no job; uma execução por issue (concorrência por número da issue). Rodar de novo exige remover e recolocar a label.
 - **Falha visível:** se o agente não concluir, ou disser que abriu o PR e ele não existir, o workflow comenta o motivo na issue e remove a label `agente`, para o card não ficar parado em silêncio.
 
@@ -166,7 +170,7 @@ O MCP do Linear permite buscar, criar e atualizar issues, projetos e comentário
 | Você pede | O agente faz |
 |---|---|
 | "Quais cards estão em Todo no LUH?" | Lista as issues do time por status e prioridade |
-| "Pega o LUH-12" | Lê a issue, move para **In Progress**, cria a branch `luh-12-…` a partir da `main` e implementa seguindo `AGENTS.md` |
+| "Pega o LUH-12" | Lê a issue, move para **In Progress**, cria a branch `luh-12-…` a partir da `main` e implementa seguindo `AGENTS.md`. Tarefa grande: mostra antes o plano com o contrato de verificação e espera o seu "aprovado" |
 | "Abre o PR" | Abre o PR com o template e `Fixes LUH-12`; a automação do Linear assume o status daí em diante |
 | "Cria um card para isso" | Cria a issue no LUH com objetivo e critérios de aceite, sem a label `agente` |
 

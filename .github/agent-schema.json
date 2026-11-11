@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "resumo", "motivo", "pr_url", "plano"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["pr_aberto", "plano", "bloqueado"],
+      "description": "plano: tarefa grande sem plano aprovado, nada foi commitado. pr_aberto: PR rascunho aberto. bloqueado: nao deu para seguir."
+    },
+    "pr_url": { "type": "string", "description": "URL do PR rascunho, ou vazio" },
+    "resumo": { "type": "string", "description": "2 a 4 frases sobre o que mudou ou o que o plano propoe" },
+    "motivo": { "type": "string", "description": "Por que nao concluiu, ou vazio" },
+    "plano": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Preenchido so com status plano; senao, textos vazios e listas vazias.",
+      "required": ["resumo", "passos", "arquivos", "criterios", "riscos"],
+      "properties": {
+        "resumo": { "type": "string", "description": "A abordagem em 1 a 2 frases" },
+        "passos": { "type": "array", "items": { "type": "string" }, "description": "Passos em ordem, um por item" },
+        "arquivos": { "type": "array", "items": { "type": "string" }, "description": "Arquivos que serao criados ou alterados" },
+        "criterios": {
+          "type": "array",
+          "description": "Um item por criterio de aceite da issue, com a evidencia que vai provar que foi cumprido",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criterio", "evidencia", "tipo"],
+            "properties": {
+              "criterio": { "type": "string", "description": "O criterio de aceite, como esta na issue" },
+              "evidencia": { "type": "string", "description": "Concreta e verificavel: nome do teste e arquivo, comando e resultado esperado, tela do print" },
+              "tipo": { "type": "string", "enum": ["teste", "comando", "print", "revisao"] }
+            }
+          }
+        },
+        "riscos": { "type": "array", "items": { "type": "string" }, "description": "Riscos, duvidas ou decisoes para a pessoa confirmar" }
+      }
+    }
+  }
+}
