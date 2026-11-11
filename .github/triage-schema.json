@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "type",
+    "priority",
+    "priority_reason",
+    "missing",
+    "labels",
+    "duplicates",
+    "reproduction_notes",
+    "ready_for_agent"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "1 a 2 frases: o que a issue pede, nas suas palavras."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["bug", "feature", "chore", "docs", "pergunta"],
+      "description": "Tipo sugerido."
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["urgente", "alta", "media", "baixa"],
+      "description": "Prioridade sugerida, na escala do Linear."
+    },
+    "priority_reason": {
+      "type": "string",
+      "description": "Uma frase: por que essa prioridade (impacto e alcance)."
+    },
+    "missing": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "O que falta na descricao para alguem implementar sem perguntar. Vazio se nada falta."
+    },
+    "labels": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 5,
+      "description": "Labels sugeridas, de preferencia as que ja existem no repositorio."
+    },
+    "duplicates": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["number", "reason"],
+        "properties": {
+          "number": { "type": "integer", "description": "Numero da issue do GitHub (da lista recebida)." },
+          "reason": { "type": "string", "description": "Uma frase: por que pode ser a mesma coisa." }
+        }
+      }
+    },
+    "reproduction_notes": {
+      "type": "string",
+      "description": "Bug: o que o teste de reproducao verifica, ou por que nao deu para escrever um. Outros tipos: vazio."
+    },
+    "ready_for_agent": {
+      "type": "boolean",
+      "description": "true se objetivo e criterios de aceite estao claros o bastante para a label agente."
+    }
+  }
+}

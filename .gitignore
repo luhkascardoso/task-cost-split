@@ -50,3 +50,7 @@ build/
 
 # Rascunhos do agente na nuvem (corpo do PR)
 .agent/
+
+# Testes de reprodução da triagem (descartáveis, nunca commitados)
+src/__repro__/
+.triage-ctx/
